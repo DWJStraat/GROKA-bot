@@ -1,14 +1,47 @@
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 
-import pyodbc
+import mariadb
 
-default_server = pyodbc.connect(
-    "Driver={SQL Server Native Client 11.0};"
-    "Server=localhost;"
-    "Database=master;"
-    "Trusted_Connection=yes;"
-)
+config = json.load(open("config.json"))
 
+
+
+class Server:
+    def __init__(self, config_path):
+        config = json.load(open(config_path))
+        self.host = config["host"]
+        self.database = config["database"]
+        self.user = config["user"]
+        self.password = config["password"]
+        self.port = config["port"]
+        self.connection = None
+        self.cursor = None
+        self.connect()
+        self.getCursor()
+
+    def connect(self):
+        self.connection = mariadb.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database,
+            port=self.port
+        )
+
+    def getCursor(self):
+        self.cursor = self.connection.cursor()
+
+    def execute(self, query):
+        self.cursor.execute(query)
+
+    def commit(self):
+        self.connection.commit()
+
+    def close(self):
+        self.connection.close()
+
+default_server = Server("config.json")
 
 class Table:
     def __init__(self, name, server_object=None):
@@ -16,133 +49,139 @@ class Table:
         self.server = server_object
         if self.server is None:
             self.server = default_server
-        self.cursor = self.server.cursor()
-        self.values = self.get()
 
-    def get(self):
-        self.cursor.execute(f"SELECT * FROM {self.name}")
-        return self.cursor.fetchall()
+    def retrieve(self, value, column):
+        self.server.execute(
+            f"SELECT * FROM {self.name} WHERE {column} = '{value}';")
+        return self.server.cursor.fetchall()
 
-    def find(self, index):
-        for i in range(len(self.values)):
-            if self.values[i][0] == index:
-                return self.values[i][1]
+    def query(self, query: object) -> object:
+        self.server.execute(query)
+        return self.server.cursor.fetchall()
+
+    def find(self, value, column, return_column):
+        self.server.execute(
+            f"SELECT {return_column} FROM {self.name} WHERE {column} = '{value}';")
+        return self.server.cursor.fetchall()
+
+    def values(self):
+        self.server.execute(f"SELECT * FROM {self.name};")
+        return self.server.cursor.fetchall()
 
 
 class Leiding:
     def __init__(self, naam, server_object=None):
         self.agenda_list = None
-        self.dag_id = None
-        self.dag = None
+        self.start = None
+        self.stop = None
         self.agenda = None
         self.naam = naam
         self.server = server_object
         if self.server is None:
             self.server = default_server
-        self.leiding = Table("Leiding", self.server)
-        self.id = self.getID()
-        self.Commissie = self.load(3, "Comissie")
-        self.speltak_lijst = Table("Speltakken", self.server)
-        self.speltak_id = None
-        self.speltak = None
-        self.getSpeltak()
+        self.ik = Table("User", self.server).retrieve(self.naam, "name")[0]
+        self.id = self.ik[0]
 
-    def getSpeltak(self):
-        for i in range(len(self.leiding.values)):
-            if self.leiding.values[i][1] == self.naam:
-                self.speltak_id = self.leiding.values[i][2]
-                self.speltak = Table("Speltakken", self.server).find(
-                    self.speltak_id)
+        # self.commissie = Table("Team", self.server).retrieve(self.id, "id")[
+        #     2]
+        # self.speltak_lijst = Table("Speltakken", self.server)
+        # self.speltak_id = None
+        # self.speltak = None
+        # self.getSpeltak()
 
-    def getNaam(self):
-        return self.naam
+    # def getSpeltak(self):
+    #     for i in range(len(self.leiding.values)):
+    #         if self.leiding.values[i][1] == self.naam:
+    #             self.speltak_id = self.leiding.values[i][2]
+    #             self.speltak = self.speltak_lijst.retrieve(self.speltak_id)
 
-    def getID(self):
-        for i in range(len(self.leiding.values)):
-            if self.leiding.values[i][1] == self.naam:
-                return self.leiding.values[i][0]
-
-    def load(self, column, table):
-        table = Table(table, self.server)
-        index = None
-        for i in range(len(self.leiding.values)):
-            if self.leiding.values[i][1] == self.naam:
-                index = self.leiding.values[i][column]
-        return table.find(index)
+    # def load(self, column, table):
+    #     table = Table(table, self.server)
+    #     index = None
+    #     for i in range(len(self.leiding.values)):
+    #         if self.leiding.values[i][1] == self.naam:
+    #             index = self.leiding.values[i][column]
+    #     return table.find(index)
 
     def setDag(self, dag):
         dag = dag.lower()
-        self.dag = dag
-        dag_table = Table("Dagen", self.server)
-        on_list = False
-        for i in range(len(dag_table.values)):
-            if dag_table.values[i][1] == dag:
-                self.dag_id = dag_table.values[i][0]
-                on_list = True
-        if not on_list:
-            print('ERROR, dag niet gevonden')
+        if dag == "donderdag":
+            self.start = 1
+            self.stop = 68
+        elif dag == "vrijdag":
+            self.start = 69
+            self.stop = 138
+        elif dag == "zaterdag":
+            self.start = 139
+            self.stop = 208
+        elif dag == "zondag":
+            self.start = 209
+            self.stop = 250
+        else:
+            return False
 
     def getSchedule(self, setting=0):
-        return schedule(setting, self.server, self.dag_id,
-                        self.id, True)
+        return schedule(self.id, self.server)
+
+    def getCommissie(self):
+        return Table("Team", self.server).find(self.id, "id", "name")[0][0]
 
 
-class Speltak:
-    def __init__(self, naam, server_object=None):
-        self.naam = naam
-        self.server = server_object
-        if self.server is None:
-            self.server = default_server
-        self.speltak = Table("Speltakken", self.server)
-        self.id = self.getID()
-        self.leiding = self.getLeiding()
+# class Speltak:
+#     def __init__(self, naam, server_object=None):
+#         self.naam = naam
+#         self.server = server_object
+#         if self.server is None:
+#             self.server = default_server
+#         self.speltak = Table("Speltakken", self.server)
+#         self.id = self.getID()
+#         # self.leiding = self.getLeiding()
+#
+#     def getID(self):
+#         self.speltak.retrieve(self.naam, "name")
+#
+#     # def getLeiding(self):
+#     #     Leiding = Table("Leiding", self.server)
+#     #     return [
+#     #         Leiding.values[i][1]
+#     #         for i in range(len(Leiding.values))
+#     #         if Leiding.values[i][2] == self.id
+#     #     ]
+#
+#     # def returnLeiding(self):
+#     #     leiding_list = ''
+#     #     for i in range(len(self.leiding)):
+#     #         if not leiding_list:
+#     #             leiding_list = (self.leiding[i])
+#     #         else:
+#     #             leiding_list += f', {self.leiding[i]}'
+#     #     return leiding_list
+#
+#     def getSchedule(self):
+#         entry = []
+#         SpelKinderen = Table("SpelKinderen", self.server)
+#         Taken = Table("Taken", self.server)
+#         Taken_List = [
+#             i[0]
+#             for i in SpelKinderen.values
+#             if i[2] == self.id
+#         ]
+#         Agenda = []
+#         for i in Taken_List:
+#             for j in Taken.values:
+#                 if i == j[0]:
+#                     start_time = datetime.strptime(j[2], "%H:%M").time()
+#                     end_time = datetime.strptime(j[3], "%H:%M").time()
+#                     entry = [start_time, end_time, j[1], j[0], '\t']
+#             for j in SpelKinderen.values:
+#                 if i == j[0]:
+#                     naam = self.leiding.find(j[1])
+#                     if entry[4] == '\t':
+#                         entry[4] = f'{naam}'
+#                     else:
+#                         entry[4] += f', {naam}'
+#             Agenda.append(entry)
 
-    def getID(self):
-        for i in range(len(self.speltak.values)):
-            if self.speltak.values[i][1] == self.naam:
-                return self.speltak.values[i][0]
-
-    def getLeiding(self):
-        Leiding = Table("Leiding", self.server)
-        return [
-            Leiding.values[i][1]
-            for i in range(len(Leiding.values))
-            if Leiding.values[i][2] == self.id
-        ]
-
-    def returnLeiding(self):
-        leiding_list = ''
-        for i in range(len(self.leiding)):
-            if not leiding_list:
-                leiding_list = (self.leiding[i])
-            else:
-                leiding_list += f', {self.leiding[i]}'
-        return leiding_list
-
-    def getSchedule(self):
-        entry = []
-        SpelKinderen = Table("SpelKinderen", self.server)
-        Taken = Table("Taken", self.server)
-        Taken_List = [
-            i[0]
-            for i in SpelKinderen.values
-            if i[2] == self.id
-        ]
-        Agenda = []
-        for i in Taken_List:
-            for j in Taken.values:
-                if i == j[0]:
-                    start_time = datetime.strptime(j[2], "%H:%M").time()
-                    end_time = datetime.strptime(j[3], "%H:%M").time()
-                    entry = [start_time, end_time, j[1], j[0], '\t']
-            for j in SpelKinderen.values:
-                if i == j[0]:
-                    naam = self.leiding.find(j[1])
-                    if entry[4] == '\t':
-                        entry[4] = f'{naam}'
-                    else:
-                        entry[4] += f', {naam}'
-            Agenda.append(entry)
 
 def schedule_option(planning, reference, taak):
     entry = ''
@@ -150,66 +189,128 @@ def schedule_option(planning, reference, taak):
         if taak == j[0]:
             naam = reference.find(j[1])
             if entry == '':
-                entry= f'met {naam}'
+                entry = f'met {naam}'
             else:
                 entry += f', {naam}'
     return entry
 
-def agenda_builder(server, Taken_List, Taken, kinderen, leiding, setting):
-    Agenda = []
-    entry = []
-    TakenLeiding = Table("TakenLeiding", server)
-    SpelKinderen = Table("SpelKinderen", server)
-    for taak in Taken_List:
-        for j in Taken.values:
-            if taak == j[0]:
-                start_time = datetime.strptime(j[2], "%H:%M").time()
-                end_time = datetime.strptime(j[3], "%H:%M").time()
-                speltakken = ''
-                leidinglijst = ''
-                if kinderen:
-                    speltakken = schedule_option(SpelKinderen, Table("Speltakken", server), taak)
-                    if speltakken == '-1':
-                        speltakken = 'voor alle kinderen'
-                    if setting == 4:
-                        speltakken = f'en {speltakken}'
-                if leiding:
-                    leidinglijst = schedule_option(TakenLeiding, Table("Leiding", server), taak)
-                    if leiding == '-1':
-                        leiding = 'voor alle leiding'
-                entry = [start_time, end_time, j[1], j[0], leidinglijst, speltakken]
-        Agenda.append(entry)
-    Agenda.sort()
-    return Agenda
 
-def schedule(setting=0, server=default_server, dag_id=0, id=0,
-             leidingrooster=False):
-    leiding = setting in [1, 4]
-    kinderen = setting in [2, 4]
-
-    Taken = Table("Taken", server)
-    if leidingrooster:
-        main_rooster = Table("Takenleiding", server)
+def schedule(id, server=default_server):
+    print(id)
+    schedule = Table("Schedule", server)
+    query = f'SELECT DISTINCT jobId FROM Schedule WHERE userid = {id}'
+    Taken_List = list(schedule.query(query))
+    for i in Taken_List:
+        Taken_List[Taken_List.index(i)] = jobBuilder(i[0], server)
+    query = f'SELECT COUNT( DISTINCT jobId ) FROM Schedule WHERE userid = {id}'
+    Taken_count = schedule.query(query)
+    print(Taken_count)
+    if Taken_count[0][0] > 1:
+        schedule = schedule_builder_2d_list(Taken_List)
+        return [
+            f'Taak: {i[0]} (Activiteit: {i[1]}) {i[2]} - {i[3]}, locatie: {i[4]}'
+            for i in schedule
+        ]
     else:
-        main_rooster = Table("SpelKinderen", server)
-    Taken_List = [
-        i[0]
-        for i in main_rooster.values
-        if i[2] == dag_id and i[1] == id
-    ]
-    Agenda = agenda_builder(server, Taken_List, Taken, kinderen, leiding, setting)
-    for i in range(len(Agenda)):
-        Agenda[
-            i] = f'{str(Agenda[i][0])[:-3]} - {str(Agenda[i][1])[:-3]}: {Agenda[i][2]} ' \
-                 f'{Agenda[i][4]} {Agenda[i][5]}'
-    return '\n'.join(Agenda)
+        schedule = schedule_builder_list(Taken_List)
+        return f'Taak: {schedule[0]} (Activiteit: {schedule[1]}) ' \
+               f'{schedule[2]} - {schedule[3]}, locatie: {schedule[4]}'
 
+def schedule_builder_2d_list(taken_list):
+        '''
+        This function takes a list of jobs and returns the schedule in list format
 
+        :param taken_list: list of jobs
 
-def main():
-    Welp = Speltak("Gidoerlog")
-    print(f'Naam: \t\t{Welp.naam}')
-    print(f'Leiding: \t{Welp.returnLeiding()}')
+        :return: list containing schedule
+        '''
+        agenda = []
+        print(taken_list)
+        for i in taken_list:
+            print(i)
+            entry = [i[1], i[2]]
+            start_day, start_time = timeConverter(i[3])
+            entry.append(f'{start_day} {start_time}')
+            stop_day, stop_time = timeConverter(i[4])
+            entry.extend((f'{stop_time}', i[5]))
+            agenda.append(entry)
+        return agenda
 
+def schedule_builder_list(taken_list):
+    '''
+    This function takes a list of jobs and returns the schedule in list format
 
-main()
+    :param taken_list: list of jobs
+
+    :return: list containing schedule
+    '''
+    try:
+        entry = [taken_list[1], taken_list[2]]
+    except IndexError:
+        raise Exception('No schedule found')
+    start_day, start_time = timeConverter(taken_list[3])
+    entry.append(f'{start_day} {start_time}')
+    stop_day, stop_time = timeConverter(taken_list[4])
+    entry.extend((f'{stop_time}', taken_list[5]))
+    return entry
+
+def BlockToTime(time, start):
+    """
+    This function converts a timeblock to a time
+
+    :param time: timeblock
+    :param start: True if you want the start time, False if you want the end time
+
+    :return: time in string format
+    """
+    TimeBlock = Table("TimeBlock", default_server)
+    returnvalue = 'starttime' if start else 'endtime'
+    return TimeBlock.find(time, "id", returnvalue)[0]
+
+def timeConverter(time):
+    days = {
+        0: "Maandag",
+        1: "Dinsdag",
+        2: "Woensdag",
+        3: "Donderdag",
+        4: "Vrijdag",
+        5: "Zaterdag",
+        6: "Zondag"
+    }
+    day = days[time.weekday()]
+    return day, time.strftime("%H:%M")
+
+def jobBuilder(jobID, server):
+    """
+    This function builds a job from a jobID
+
+    :param jobID: ID of the job
+    :param server: server to connect to
+
+    :return: job name, activity name, location, start time, stop time
+    """
+    job_name = Table("Job", server).retrieve(jobID, "id")[0][1]
+    activityID = Table("Job", server).retrieve(jobID, "id")[0][2]
+    activity_name = Table("Activity", server).retrieve(activityID, "id")[0][1]
+    locationID = Table("Activity", server).retrieve(activityID, "id")[0][5]
+    startTimeBlock = Table("Schedule", server).find(activityID, "id",
+                                                    'timeBlockStart')[0][0]
+    stopTimeBlock = Table("Schedule", server).find(activityID, "id",
+                                                   'timeBlockEnd')[0][0]
+    start_time = BlockToTime(startTimeBlock, True)
+    stop_time = BlockToTime(stopTimeBlock, False)
+    location = Table("Location", server).retrieve(locationID, "id")[0][1]
+
+    return [startTimeBlock, job_name, activity_name, start_time[0], stop_time[0], location]
+
+def timeToBlock(time):
+    """
+    This function converts a time to a timeblock
+
+    :param time: time in string format
+
+    :return: timeblock
+    """
+    TimeBlock = Table("TimeBlock", default_server)
+    timeRounded = time + (datetime.min - time) % (timedelta(minutes=15))
+    return TimeBlock.find(timeRounded, "endtime", "id")[0][0]
