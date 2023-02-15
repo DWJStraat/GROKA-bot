@@ -16,7 +16,7 @@ def start(message):
                      "Hallo, ik ben de rooster bot van de scouting voor "
                      "GROKA 2023. "
                      "\n"
-                     "\nStuur /register om je te registreren."
+                     "\nStuur /aanmelden om je te registreren."
                      "\nStuur /overmij om je profiel te bekijken."
                      "\nStuur /over om het profiel van iemand anders te "
                      "bekijken."
@@ -100,7 +100,7 @@ def mijnrooster(message):
                          "je te registreren.")
 
 
-@bot.message_handler(commands=['register'])
+@bot.message_handler(commands=['aanmelden'])
 def register(message):
     bot.send_message(message.chat.id,
                      "Hallo leidings, wat is je volledige naam?")
@@ -139,7 +139,7 @@ def register2(message):
 #         leiding_list = Groep.returnLeiding()
 #         bot.send_message(message.chat.id,
 #                          f"Je bent leiding van {Groep.naam}."
-#                          f"\nDe leiding van jou speltak is: "
+#                          f"\nDe leiding van jouw speltak is: "
 #                          f"{leiding_list}")
 #     else:
 #         bot.send_message(message.chat.id,
@@ -247,5 +247,12 @@ def error_handler(e, message):
                      "neem contact op met de beheerder.")
     print(e)
 
+# Future fuzzy search - need to figure out how to implement it
+# def name_picker(name):
+#     user_table = Table('User')
+#     try:
+#         id = user_table.retrieve('name', name)[0][0]
+#     except:
+#         try:
 
 bot.infinity_polling()

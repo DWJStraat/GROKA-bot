@@ -68,6 +68,19 @@ class Table:
         self.server.execute(f"SELECT * FROM {self.name};")
         return self.server.cursor.fetchall()
 
+    def like(self, value, column):
+        self.server.execute(
+            f"SELECT * FROM {self.name} WHERE {column} LIKE '%{value}%';")
+        return self.server.cursor.fetchall()
+
+    def soundsLike(self, value, column):
+        self.server.execute(
+            f"SELECT * FROM {self.name} WHERE STRCMP({column},'{value}');")
+        return self.server.cursor.fetchall()
+
+class Tijdblok(Table):
+    def __init__(self):
+        super().__init__("Tijdblokken")
 
 class Leiding:
     def __init__(self, naam, server_object=None):
