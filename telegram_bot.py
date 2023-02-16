@@ -1,8 +1,7 @@
 import mariadb
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from main import Leiding as Leiding
-from main import Table as Table
+from main import *
 
 import telebot
 import json

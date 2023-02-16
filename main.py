@@ -80,20 +80,42 @@ class Table:
 
 class Tijdblok(Table):
     def __init__(self):
-        super().__init__("Tijdblokken")
+        super().__init__("TimeBlock")
+        self.dates = None
+        self.days = None
 
-class Leiding:
-    def __init__(self, naam, server_object=None):
+    def get_day(self, date):
+        self.server.execute(
+            f"SELECT * FROM TimeBlock WHERE DATE(starttime) = '{date}';")
+        return self.server.cursor.fetchall(
+        )
+
+    def get_today(self):
+        return self.get_day(datetime.now().strftime("%Y-%m-%d"))
+
+    def get_day_list(self):
+        self.dates = []
+        self.days = []
+        self.server.execute(
+            'SELECT DISTINCT DATE(starttime), '
+            'DAYNAME(DATE(starttime)) '
+            'FROM TimeBlock;'
+        )
+        for i in self.server.cursor.fetchall():
+            self.days.append(i[1])
+            self.dates.append(i[0])
+
+class Leiding(Table):
+    def __init__(self, naam):
+        super().__init__("User")
         self.agenda_list = None
         self.start = None
         self.stop = None
         self.agenda = None
         self.naam = naam
-        self.server = server_object
-        if self.server is None:
-            self.server = default_server
-        self.ik = Table("User", self.server).retrieve(self.naam, "name")[0]
+        self.ik = self.retrieve(self.naam, "name")[0]
         self.id = self.ik[0]
+        self.tijdblok = Tijdblok()
 
         # self.commissie = Table("Team", self.server).retrieve(self.id, "id")[
         #     2]
@@ -119,19 +141,17 @@ class Leiding:
     def setDag(self, dag):
         dag = dag.lower()
         if dag == "donderdag":
-            self.start = 1
-            self.stop = 68
+            day = '2023-05-17'
         elif dag == "vrijdag":
-            self.start = 69
-            self.stop = 138
+            day = '2023-05-18'
         elif dag == "zaterdag":
-            self.start = 139
-            self.stop = 208
+            day = '2023-05-19'
         elif dag == "zondag":
-            self.start = 209
-            self.stop = 250
+            day = '2023-05-20'
         else:
             return False
+        self.start = self.tijdblok.get_day(day)[0][0]
+        self.stop = self.tijdblok.get_day(day)[-1][0]
 
     def getSchedule(self, setting=0):
         return schedule(self.id, self.server)
