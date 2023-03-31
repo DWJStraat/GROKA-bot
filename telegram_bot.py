@@ -1,3 +1,5 @@
+import random
+
 import regex as re
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -5,11 +7,14 @@ import datetime
 
 from Tables import *
 
+
+
 config = json.load(open("config.json"))
 
 bot = telebot.TeleBot(config['telegram_token'])
 
 schedule = Schedules_today()
+
 
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
@@ -112,7 +117,7 @@ def register2(message):
             bot.send_message(message.chat.id, "Je naam is niet gevonden in de "
                                               "database, probeer het opnieuw.")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='aanmelden')
 
 
 @bot.message_handler(commands=['overmij'])
@@ -127,7 +132,7 @@ def about_me(message):
                 bot.send_message(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
                                                   "je te registreren.")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command= 'overmij')
 
 
 @bot.message_handler(commands=['over'])
@@ -143,7 +148,7 @@ def about2(message):
         logger(message, 'over', naam)
         profile(naam, message)
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='over')
 
 
 @bot.message_handler(commands=['mijnnu'])
@@ -152,9 +157,9 @@ def mynow(message):
         if register_check(message):
             telegram_id = message.from_user.id
             naam = Telegram().get_name(telegram_id)
-            now_function(naam, message)
+            bot.send_message(message.chat.id, Schedules_now().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='mijnnu')
 
 
 # Rooster commands
@@ -170,9 +175,9 @@ def now2(message):
     try:
         naam = message.text
         logger(message, 'nu', naam)
-        now_function(naam, message)
+        bot.send_message(message.chat.id, Schedules_now().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='nu')
 
 
 @bot.message_handler(commands=['mijnstraks'])
@@ -181,9 +186,9 @@ def mysoon(message):
         if register_check(message):
             telegram_id = message.from_user.id
             naam = Telegram().get_name(telegram_id)
-            soon_function(naam, message)
+            bot.message_handler(message.chat.id, Schedules_Next().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='mijnstraks')
 
 
 @bot.message_handler(commands=['straks'])
@@ -198,9 +203,9 @@ def soon2(message):
         logger(message, 'straks', message.text)
         if register_check(message):
             naam = message.text
-            soon_function(naam, message)
+            bot.send_message(message.chat.id, Schedules_Next().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message,command='straks')
 
 
 @bot.message_handler(commands=['mijnrooster', 'mijnvandaag'])
@@ -211,7 +216,7 @@ def myrooster(message):
             naam = Telegram().get_name(telegram_id)
             bot.send_message(message.chat.id, Schedules_today().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='mijnrooster')
 
 
 @bot.message_handler(commands=['rooster', 'vandaag'])
@@ -226,7 +231,7 @@ def rooster2(message):
         naam = message.text
         bot.send_message(message.chat.id, Schedules_today().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='rooster')
 
 
 @bot.message_handler(commands=['mijnmorgen'])
@@ -237,7 +242,7 @@ def mymorgen(message):
             naam = Telegram().get_name(telegram_id)
             bot.send_message(message.chat.id, Schedules_tomorrow().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='mijnmorgen')
 
 
 @bot.message_handler(commands=['morgen'])
@@ -252,7 +257,7 @@ def morgen2(message):
         naam = message.text
         bot.send_message(message.chat.id, Schedules_tomorrow().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='morgen')
 
 
 # Info commands
@@ -284,7 +289,7 @@ def myspeltak(message):
             bot.send_message(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
                                               "je te registreren.")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='mijnspeltak')
 
 
 @bot.message_handler(commands=['speltak'])
@@ -311,7 +316,7 @@ def speltak2(message):
         except mariadb.Error:
             bot.send_message(message.chat.id, "Deze speltak is niet gevonden in de database.")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='speltak')
 
 
 @bot.message_handler(commands=['feedback'])
@@ -331,21 +336,23 @@ def EHBOmsg(message):
 
 def EHBOmsg2(message):
     try:
+        logger(message, "EHBO", message.text)
         EHBOinput = message.text
         telegram_id = message.from_user.id
-        EHBOmessage = f"[{Telegram().get_name(telegram_id)}](tg://user?id={telegram_id}) heeft het volgende bericht " \
-                      f"gestuurd:"
+        EHBOmessage = f"[EHBO]\n" \
+                      f"[{Telegram().get_name(telegram_id)}](tg://user?id={telegram_id}) " \
+                      f"heeft het volgende bericht gestuurd: \n" \
+                      f"{EHBOinput}"
         EHBO_id = Leader().get_EHBO()
         EHBO_names = [Leader().get_name(i) for i in EHBO_id]
         EHBO_telegram = [Leiding(i).getTelegram() for i in EHBO_names]
         for i in EHBO_telegram:
             if i is not None:
                 bot.send_message(i, EHBOmessage, parse_mode="Markdown")
-                bot.send_message(i, EHBOinput)
         EHBO_name_string = ", ".join(EHBO_names)
         bot.send_message(message.chat.id, f"De EHBO-ers zijn {EHBO_name_string} en hebben een bericht gekregen.")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='SOS')
 
 
 @bot.message_handler(commands=['EHBOers'])
@@ -368,7 +375,7 @@ def EHBOers(message):
         print(EHBO_list)
         bot.send_message(message.chat.id, f"De EHBO-ers zijn:\n{EHBO_list}", parse_mode="Markdown")
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, command='EHBOers')
 
 
 # Admin commands
@@ -437,6 +444,81 @@ def problems(message):
         bot.send_message(message.chat.id, Problems().get_problems())
 
 
+@bot.message_handler(commands=['/schedule'])
+def schedule(message):
+    if Telegram().get_admin(message.from_user.id):
+        bot.send_message(message.chat.id, "Van wie wil je het rooster inzien?")
+        bot.register_next_step_handler(message, schedule2)
+
+
+def schedule2(message):
+    try:
+        if Telegram().get_admin(message.from_user.id):
+            name = message.text
+            if Leader().check_name(name):
+                bot.send_message(message.chat.id, Leader().get_schedule(name))
+            else:
+                bot.send_message(message.chat.id, "Deze naam is niet gevonden.")
+    except Exception as e:
+        error_handler(e, message)
+
+
+@bot.message_handler(commands=['error'])
+def throw_error(message):
+    bot.send_message(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
+                                      "Neem geen contact op met de ontwikkelaars.")
+    string = ''
+    try:
+        string[1]
+    except Exception as e:
+        error_handler(e, message)
+
+
+@bot.message_handler(commands=["haarlijn_jorik"])
+def haarlijn(message):
+    error_handler("ERROR 404:\nHairline not found", message, do_not_log=True)
+
+
+@bot.message_handler(commands=["pingelen"])
+def pingelen(message):
+    bot.send_message(message.chat.id, "Welkom bij Commando Pingelen. Als je een commando krijgt, volg het commando. Zo niet,"
+                                      "doe '...'")
+    pingelen2(message)
+
+def pingelen2(message):
+    pingelen = [
+        "Commando pingelen",
+        "Commando bol",
+        "Commando plat",
+        "Commando hol"
+        "Pingelen",
+        "Bol",
+        "Plat",
+        "Hol"
+    ]
+    commando = random.choice(pingelen)
+    bot.send_message(message.chat.id, commando)
+    bot.register_next_step_handler(message, pingelen3, commando)
+
+def pingelen3 (message, commando):
+    if commando == "Commando pingelen":
+        output = "Pingelen"
+    elif commando == "Commando bol":
+        output = "Bol"
+    elif commando == "Commando plat":
+        output = "Plat"
+    elif commando == "Commando hol":
+        output = "Hol"
+    else:
+        output = "..."
+    if message.text == output:
+        bot.send_message(message.chat.id, "Goed gedaan!")
+        pingelen(message)
+    else:
+        bot.send_message(message.chat.id, "Helaas, probeer het nog eens.")
+
+
+
 # Algemene functies
 
 def profile(naam, message):
@@ -487,7 +569,7 @@ def schedule_next(name):
 
 
 def now_function(naam, message):
-    location_dict = Schedules_now().get_locations(naam)
+    location_dict = Tijdblok().get_locations(naam)
     location = list(location_dict.keys())
     location_urls = list(location_dict.values())
     inline_keyboard = [
@@ -510,12 +592,14 @@ def soon_function(naam, message):
 
 # Safety Features
 
-def error_handler(e, message):
+def error_handler(e, message, do_not_log=False, command = None):
     bot.send_message(message.chat.id,
-                     "Er is iets fout gegaan, probeer het "
-                     "opnieuw.\n\nAls het probleem zich blijft herhalen, "
-                     "neem contact op met de beheerder.\n"
-                     "De error is: " + str(e))
+                     f"Er is iets fout gegaan, probeer het "
+                     f"opnieuw.\n\nAls het probleem zich blijft herhalen, "
+                     f"neem contact op met de beheerder.\n"
+                     f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
+    if not do_not_log:
+        logger(message, f"!!!ERROR{command}!!!", str(e))
     print(e)
 
 
@@ -535,7 +619,9 @@ def admin_check(message):
     return False
 
 
-def logger(message, command, input_string):
+def logger(message, command, input_string=None):
+    if input_string is None:
+        input_string = message.text
     datestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     telegram_id = message.from_user.id
     command = command
@@ -544,4 +630,5 @@ def logger(message, command, input_string):
         f.write(f'{datestamp};{telegram_id};{command};{input_string}\n')
 
 
+print('Running')
 bot.infinity_polling()

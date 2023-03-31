@@ -1,44 +1,7 @@
 from main import *
 
-Team = Table("Team", default_server)
-Troop = Table("Troop", default_server)
 Location = Table("Location", default_server)
 
-
-class Schedules_now(ShortTermSchedule):
-    def __init__(self):
-        super().__init__("VwBotTextScheduleNow")
-
-
-class Schedules_Next(ShortTermSchedule):
-    def __init__(self):
-        super().__init__("VwBotTextScheduleNext")
-
-
-class Schedules_tomorrow(Table):
-    def __init__(self):
-        super().__init__("VwBotTextScheduleTomorrow")
-
-    def get_schedule(self, name):
-        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
-        entries = len(bot_text)
-        if entries == 0:
-            return "Geen rooster gevonden"
-        elif entries == 1:
-            return bot_text[0][0]
-
-
-class Schedules_today(Table):
-    def __init__(self):
-        super().__init__("VwBotTextScheduleToday")
-
-    def get_schedule(self, name):
-        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
-        entries = len(bot_text)
-        if entries == 0:
-            return "Geen rooster gevonden"
-        elif entries == 1:
-            return bot_text[0][0]
 
 
 class Telegram(Table):
@@ -79,73 +42,7 @@ class Telegram(Table):
         return self.query(query)[0][0]
 
 
-class Leader(Table):
-    def __init__(self):
-        super().__init__("Leader")
 
-    def get_name(self, id = None):
-        if id is not None:
-            return self.query(f"SELECT name FROM {self.name} WHERE id = '{id}'")[0][0]
-        result = self.query(f"SELECT name FROM {self.name}")
-        for i in range(len(result)):
-            result[i] = result[i][0]
-        return result
-
-    def get_id(self, name= None):
-        if name is not None:
-            return self.query(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
-        result = self.query(f"SELECT id FROM {self.name}")
-        for i in range(len(result)):
-            result[i] = result[i][0]
-        return result
-    def get_EHBO(self):
-        EHBOers = self.query(f"SELECT id FROM {self.name} WHERE EHBO = 1")
-        return [user[0] for user in EHBOers]
-
-
-class Leiding(Table):
-    def __init__(self, naam):
-        super().__init__("Leader")
-        self.naam = naam
-        self.ik = self.retrieve(self.naam, "name")[0]
-        self.id = self.ik[0]
-        self.tijdblok = Tijdblok()
-
-    def getCommissie(self):
-        TeamId = self.find(self.id, "id", "TeamId")[0][0]
-        return Team.find(TeamId, "id", "name")[0][0]
-
-    def getTroop(self):
-        TroopId = self.find(self.id, "id", "TroopId")[0][0]
-        return Troop.find(TroopId, "Id", "Name")[0][0]
-
-    def getPhone(self):
-        phone_nr = self.find(self.id, "id", "phone_nr")[0][0]
-        return "Geen telefoonnummer bekend" if phone_nr is None else phone_nr
-
-    def getTelegram(self):
-        try:
-            return Telegram().get_id(self.naam)
-        except AttributeError:
-            return "Geen telegram account bekend"
-
-    def get_EHBO(self):
-        EHBO = self.find(self.id, "id", "EHBO")[0][0]
-        return "Nee" if EHBO == 0 else "Ja"
-
-
-class Speltak(Table):
-    def __init__(self, name):
-        super().__init__('Troop')
-        self.speltak = name
-        self.id = self.find(self.speltak, "Name", "Id")[0][0]
-
-    def getLeiding(self):
-        leidings = Leader().find(self.id, "TroopId", "name")
-        return [i[0] for i in leidings]
-
-    def getMembers(self):
-        return self.find(self.id, "Id", "nYouthmembers")[0][0]
 
 
 class Problems(Table):
@@ -161,6 +58,7 @@ class Problems(Table):
                 output += "\n"
         return output
 
+
 class Availability(Table):
     def __init__(self):
         super().__init__("VwAvailability")
@@ -173,4 +71,196 @@ class Availability(Table):
             if day != days[-1]:
                 output += "\n"
         return output
-Availability().get_days()
+
+
+class Team(Table):
+    def __init__(self):
+        super().__init__("Team")
+
+
+class Leader(Table):
+    def __init__(self):
+        super().__init__("Leader")
+
+    def get_name(self, id=None):
+        if id is not None:
+            return self.query(f"SELECT name FROM {self.name} WHERE id = '{id}'")[0][0]
+        result = self.query(f"SELECT name FROM {self.name}")
+        for i in range(len(result)):
+            result[i] = result[i][0]
+        return result
+
+    def get_id(self, name=None):
+        if name is not None:
+            return self.query(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
+        result = self.query(f"SELECT id FROM {self.name}")
+        for i in range(len(result)):
+            result[i] = result[i][0]
+        return result
+
+    def get_EHBO(self):
+        EHBOers = self.query(f"SELECT id FROM {self.name} WHERE EHBO = 1")
+        return [user[0] for user in EHBOers]
+
+    def check_name(self, name):
+        name = self.query(f"SELECT name FROM {self.name} WHERE name = '{name}'")
+        return len(name) == 1
+
+
+class Leiding(Table):
+    def __init__(self, naam):
+        super().__init__("Leader")
+        self.naam = naam
+        self.ik = self.retrieve(self.naam, "name")[0]
+        self.id = self.ik[0]
+        self.tijdblok = Tijdblok()
+
+    def getCommissie(self):
+        TeamId = self.find(self.id, "id", "TeamId")[0][0]
+        return Team().find(TeamId, "id", "name")[0][0]
+
+    def getTroop(self):
+        TroopId = self.find(self.id, "id", "TroopId")[0][0]
+        return Speltak().find(TroopId, "Id", "Name")[0][0]
+
+    def getPhone(self):
+        phone_nr = self.find(self.id, "id", "phone_nr")[0][0]
+        return "Geen telefoonnummer bekend" if phone_nr is None else phone_nr
+
+    def getTelegram(self):
+        try:
+            return Telegram().get_id(self.naam)
+        except AttributeError:
+            return "Geen telegram account bekend"
+
+    def get_EHBO(self):
+        EHBO = self.find(self.id, "id", "EHBO")[0][0]
+        return "Nee" if EHBO == 0 else "Ja"
+
+    def get_schedule(self):
+        results = Schedule().query(f'SELECT * FROM VwScheduleNames WHERE Leaders = "{self.naam}"')
+
+
+
+class Speltak(Table):
+    def __init__(self, name= None):
+        super().__init__('Troop')
+        self.speltak = name
+        self.id = self.find(self.speltak, "Name", "Id")[0][0]
+
+    def getLeiding(self):
+        leidings = Leader().find(self.id, "TroopId", "name")
+        return [i[0] for i in leidings]
+
+    def getMembers(self):
+        return self.find(self.id, "Id", "nYouthmembers")[0][0]
+
+
+class ShortTermSchedule(Table):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def get_schedule(self, name):
+        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
+        entries = len(bot_text)
+        if entries == 0:
+            return "Geen rooster gevonden"
+        elif entries == 1:
+            return bot_text[0][0]
+        else:
+            output = ""
+            for counter, i in enumerate(bot_text):
+                output += i[0]
+                if counter != entries - 1:
+                    output += "\n----------------\n"
+            return output
+
+
+class Schedules_now(ShortTermSchedule):
+    def __init__(self):
+        super().__init__("VwBotTextScheduleNow")
+
+
+class Schedules_Next(ShortTermSchedule):
+    def __init__(self):
+        super().__init__("VwBotTextScheduleNext")
+
+
+class Schedule(Table):
+    def __init__(self):
+        super().__init__("VwScheduleNames")
+
+class Schedules_tomorrow(Table):
+    def __init__(self):
+        super().__init__("VwBotTextScheduleTomorrow")
+
+    def get_schedule(self, name):
+        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
+        entries = len(bot_text)
+        if entries == 0:
+            return "Geen rooster gevonden"
+        elif entries == 1:
+            return bot_text[0][0]
+
+
+class Tijdblok(Table):
+    def __init__(self):
+        super().__init__("TimeBlock")
+        self.dates = None
+        self.days = None
+        self.start_time = self.query('SELECT MIN(starttime) FROM TimeBlock;')[0][0]
+        self.end_time = self.query('SELECT MAX(endtime) FROM TimeBlock;')[0][0]
+
+    def get_day(self, date= None):
+        if date is None:
+            self.server.execute("SELECT * FROM TimeBlock;")
+        else:
+            self.server.execute(
+                f"SELECT * FROM TimeBlock WHERE DATE(starttime) = '{date}';")
+        value = list(self.server.cursor.fetchall())
+        self.server.closeCursor()
+        return value
+
+    def get_today(self):
+        return self.get_day(datetime.now().strftime("%Y-%m-%d"))
+
+    def get_day_list(self):
+        self.dates = []
+        self.days = []
+        self.server.execute(
+            'SELECT DISTINCT DATE(starttime), '
+            'DAYNAME(DATE(starttime)) '
+            'FROM TimeBlock;'
+        )
+        for i in self.server.cursor.fetchall():
+            self.days.append(i[1])
+            self.dates.append(i[0])
+
+    def get_start_time(self, timeblock):
+        query = f'SELECT starttime from TimeBlock WHERE id = {timeblock};'
+        return self.query(query)
+
+    def get_end_time(self, timeblock):
+        query = f'SELECT endtime from TimeBlock WHERE id = {timeblock};'
+        return self.query(query)
+
+
+
+    def get_locations(self, name):
+        locations = self.query(f"SELECT DISTINCT Location FROM {self.name} WHERE Leader = '{name}'")
+        locationURLs = self.query(f"SELECT DISTINCT LocationURL FROM {self.name} WHERE Leader = '{name}'")
+        return {i[0]: locationURLs[0][0] for i in locations}
+
+
+class Schedules_today(Table):
+    def __init__(self):
+        super().__init__("VwBotTextScheduleToday")
+
+    def get_schedule(self, name):
+        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
+        entries = len(bot_text)
+        if entries == 0:
+            return "Geen rooster gevonden"
+        elif entries == 1:
+            return bot_text[0][0]
+

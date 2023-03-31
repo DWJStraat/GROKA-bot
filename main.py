@@ -40,7 +40,11 @@ class Server:
         self.getCursor()
 
     def execute(self, query):
-        self.cursor.execute(query)
+        try:
+            self.cursor.execute(query)
+        except mariadb.Error as e:
+            print(f"Error: {e}\nQuery: {query}")
+            raise e
 
     def commit(self):
         self.connection.commit()
@@ -117,68 +121,5 @@ class Table:
         return [i[0] for i in values]
 
 
-class Tijdblok(Table):
-    def __init__(self):
-        super().__init__("TimeBlock")
-        self.dates = None
-        self.days = None
-        self.start_time = self.query('SELECT MIN(starttime) FROM TimeBlock;')[0][0]
-        self.end_time = self.query('SELECT MAX(endtime) FROM TimeBlock;')[0][0]
 
-    def get_day(self, date= None):
-        if date is None:
-            self.server.execute("SELECT * FROM TimeBlock;")
-        else:
-            self.server.execute(
-                f"SELECT * FROM TimeBlock WHERE DATE(starttime) = '{date}';")
-        value = list(self.server.cursor.fetchall())
-        self.server.closeCursor()
-        return value
-
-    def get_today(self):
-        return self.get_day(datetime.now().strftime("%Y-%m-%d"))
-
-    def get_day_list(self):
-        self.dates = []
-        self.days = []
-        self.server.execute(
-            'SELECT DISTINCT DATE(starttime), '
-            'DAYNAME(DATE(starttime)) '
-            'FROM TimeBlock;'
-        )
-        for i in self.server.cursor.fetchall():
-            self.days.append(i[1])
-            self.dates.append(i[0])
-
-    def get_start_time(self, timeblock):
-        query = f'SELECT starttime from TimeBlock WHERE id = {timeblock};'
-        return self.query(query)
-
-    def get_end_time(self, timeblock):
-        query = f'SELECT endtime from TimeBlock WHERE id = {timeblock};'
-        return self.query(query)
-
-class ShortTermSchedule(Table):
-    def __init__(self, name):
-        super().__init__(name)
-
-    def get_schedule(self, name):
-        bot_text = self.query(f"SELECT BotText FROM {self.name} WHERE Leader = '{name}'")
-        entries = len(bot_text)
-        if entries == 0:
-            return "Geen rooster gevonden"
-        elif entries == 1:
-            return bot_text[0][0]
-        else:
-            output = ""
-            for counter, i in enumerate(bot_text):
-                output += i[0]
-                if counter != entries - 1:
-                    output += "\n----------------\n"
-            return output
-
-    def get_locations(self, name):
-        locations = self.query(f"SELECT DISTINCT Location FROM {self.name} WHERE Leader = '{name}'")
-        locationURLs = self.query(f"SELECT DISTINCT LocationURL FROM {self.name} WHERE Leader = '{name}'")
-        return {i[0]: locationURLs[0][0] for i in locations}
 
