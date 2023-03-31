@@ -473,6 +473,7 @@ def throw_error(message):
     except Exception as e:
         error_handler(e, message)
 
+# Eastereggs
 
 @bot.message_handler(commands=["haarlijn_jorik"])
 def haarlijn(message):
@@ -517,7 +518,9 @@ def pingelen3 (message, commando):
     else:
         bot.send_message(message.chat.id, "Helaas, probeer het nog eens.")
 
-
+@bot.message_handler(commands=["stress"])
+def stress(message):
+    bot.send_message(message.chat.id, "https://www.youtube.com/watch?v=logaMSPVV-E")
 
 # Algemene functies
 
