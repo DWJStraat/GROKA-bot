@@ -522,6 +522,8 @@ def pingelen3 (message, commando):
 def stress(message):
     bot.send_message(message.chat.id, "https://www.youtube.com/watch?v=logaMSPVV-E")
 
+
+
 # Algemene functies
 
 def profile(naam, message):
