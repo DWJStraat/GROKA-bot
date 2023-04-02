@@ -11,7 +11,7 @@ def export_person(name):
     :param name: The name of the person
     :return: A json file with the schedule of the person
     """
-    leader_id = Leader().get_id(name)
+    leader_id = Leader_Table().get_id(name)
     query = f'SELECT * FROM Schedule WHERE LeaderId = {leader_id}'
     schedule = Table('Schedule').query(query)
     schedule_dict = schedule_dict_builder(schedule)
@@ -83,7 +83,7 @@ def mass_export():
     :return: A json file with the schedule of all people
     """
     json_file = time_json_builder()
-    name_list = Leader().get_name()
+    name_list = Leader_Table().get_name()
     name_list.sort()
     for i in name_list:
         print(i)

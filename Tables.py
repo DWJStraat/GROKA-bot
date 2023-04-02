@@ -10,11 +10,11 @@ class Telegram(Table):
 
     def get_name(self, id):
         user_id = self.query(f'SELECT LeaderId FROM {self.name} WHERE telegramid = {id}')[0][0]
-        return Leader().get_name(user_id)
+        return Leader_Table().get_name(user_id)
 
     def get_id(self, name):
         try:
-            user_id = Leader().get_id(name)
+            user_id = Leader_Table().get_id(name)
             return self.query(f'SELECT telegramid FROM {self.name} WHERE LeaderId = {user_id}')[0][0]
         except IndexError:
             return None
@@ -26,7 +26,7 @@ class Telegram(Table):
             return None
 
     def set_name(self, telegram_id, naam):
-        leader_id = int(Leader().get_id(naam))
+        leader_id = int(Leader_Table().get_id(naam))
         telegram_id = str(telegram_id)
         query = f"REPLACE INTO Telegram VALUES ({telegram_id}, {leader_id}, null)"
         self.execute(query)
@@ -78,7 +78,7 @@ class Team(Table):
         super().__init__("Team")
 
 
-class Leader(Table):
+class Leader_Table(Table):
     def __init__(self):
         super().__init__("Leader")
 
@@ -120,8 +120,8 @@ class Leiding(Table):
         return Team().find(TeamId, "id", "name")[0][0]
 
     def getTroop(self):
-        TroopId = self.find(self.id, "id", "TroopId")[0][0]
-        return Speltak().find(TroopId, "Id", "Name")[0][0]
+        TroopId = self.find(self.id, "id", "TroopId")
+        return Speltak().find(TroopId, "Id", "Name")
 
     def getPhone(self):
         phone_nr = self.find(self.id, "id", "phone_nr")[0][0]
@@ -146,10 +146,10 @@ class Speltak(Table):
     def __init__(self, name= None):
         super().__init__('Troop')
         self.speltak = name
-        self.id = self.find(self.speltak, "Name", "Id")[0][0]
+        self.id = self.find(self.speltak, "Name", "Id")
 
     def getLeiding(self):
-        leidings = Leader().find(self.id, "TroopId", "name")
+        leidings = Leader_Table().find(self.id, "TroopId", "name")
         return [i[0] for i in leidings]
 
     def getMembers(self):

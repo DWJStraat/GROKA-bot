@@ -105,7 +105,7 @@ def register2(message):
     logger(message, 'aanmelden', naam)
     try:
         try:
-            naam_sql = Leader().get_id(naam)
+            naam_sql = Leader_Table().get_id(naam)
         except mariadb.Error:
             naam_sql = None
         if naam_sql is not None:
@@ -343,8 +343,8 @@ def EHBOmsg2(message):
                       f"[{Telegram().get_name(telegram_id)}](tg://user?id={telegram_id}) " \
                       f"heeft het volgende bericht gestuurd: \n" \
                       f"{EHBOinput}"
-        EHBO_id = Leader().get_EHBO()
-        EHBO_names = [Leader().get_name(i) for i in EHBO_id]
+        EHBO_id = Leader_Table().get_EHBO()
+        EHBO_names = [Leader_Table().get_name(i) for i in EHBO_id]
         EHBO_telegram = [Leiding(i).getTelegram() for i in EHBO_names]
         for i in EHBO_telegram:
             if i is not None:
@@ -360,8 +360,8 @@ def EHBOers(message):
     try:
         if not register_check(message):
             return
-        EHBO_id = Leader().get_EHBO()
-        EHBO_names = [Leader().get_name(i) for i in EHBO_id]
+        EHBO_id = Leader_Table().get_EHBO()
+        EHBO_names = [Leader_Table().get_name(i) for i in EHBO_id]
         EHBO_telegram = [Leiding(i).getTelegram() for i in EHBO_names]
         EHBO_list = []
         for i, n in enumerate(EHBO_names):
@@ -455,8 +455,8 @@ def schedule2(message):
     try:
         if Telegram().get_admin(message.from_user.id):
             name = message.text
-            if Leader().check_name(name):
-                bot.send_message(message.chat.id, Leader().get_schedule(name))
+            if Leader_Table().check_name(name):
+                bot.send_message(message.chat.id, Leader_Table().get_schedule(name))
             else:
                 bot.send_message(message.chat.id, "Deze naam is niet gevonden.")
     except Exception as e:

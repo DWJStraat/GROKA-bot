@@ -57,7 +57,7 @@ def get_values(schedule_json, i, j):
     activity_name = schedule_json[i][j]['activity']
     activity_id = activity.query(f'SELECT id FROM Activity WHERE name = "{activity_name}" LIMIT 1')[0][0]
     timeblock = 1
-    leader_id = Leader().get_id(i)
+    leader_id = Leader_Table().get_id(i)
     job_name = schedule_json[i][j]['job']
     job_id = handle_job(job_name, activity_id)
     return leader_id, job_id, timeblock
@@ -84,7 +84,7 @@ def enter_schedule(schedule_json):
                 job_id = handle_job(previous_task, activity_id)
                 with contextlib.suppress(Exception):
                     job_id = job_id[0][0]
-                leader_id = Leader().get_id(i)
+                leader_id = Leader_Table().get_id(i)
                 query = f'INSERT INTO Schedule (LeaderId, JobId, StartTimeBlockId, EndTimeBlockId) VALUES ({leader_id}, {job_id}, {start_time}, {end_time})'
                 schedule.execute(query)
                 schedule.commit()
