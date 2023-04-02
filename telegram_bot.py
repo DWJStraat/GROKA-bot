@@ -622,13 +622,13 @@ def logger(message= None, command = None, input_string=None):
 
 
 print('Running')
-bot.infinity_polling()
-
-def on_exit(sig, frame):
+try:
+    bot.infinity_polling()
+except KeyboardInterrupt:
+    pass
+finally:
     print('Shutting down')
     logger(None, "!!!EXIT!!!", "Shutting down")
     Server(default_server).close()
     sys.exit(0)
-
-signal.signal(signal.SIGINT, on_exit)
 
