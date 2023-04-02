@@ -621,9 +621,11 @@ def logger(message= None, command = None, input_string=None):
         f.write(f'{datestamp};{telegram_id};{command};{input_string}\n')
 
 
+import contextlib
 print('Running')
 try:
-    bot.infinity_polling()
+    with contextlib.suppress(Exception):
+        bot.infinity_polling()
 except KeyboardInterrupt:
     pass
 finally:
