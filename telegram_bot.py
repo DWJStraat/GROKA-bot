@@ -629,6 +629,6 @@ except KeyboardInterrupt:
 finally:
     print('Shutting down')
     logger(None, "!!!EXIT!!!", "Shutting down")
-    Server(default_server).close()
+    default_server.close()
     sys.exit(0)
 
