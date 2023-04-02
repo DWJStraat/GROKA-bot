@@ -120,8 +120,8 @@ class Leiding(Table):
         return Team().find(TeamId, "id", "name")[0][0]
 
     def getTroop(self):
-        TroopId = self.find(self.id, "id", "TroopId")
-        return Speltak().find(TroopId, "Id", "Name")
+        TroopId = self.find(self.id, "id", "TroopId")[0][0]
+        return Speltak().find(TroopId, "Id", "Name")[0][0]
 
     def getPhone(self):
         phone_nr = self.find(self.id, "id", "phone_nr")[0][0]
