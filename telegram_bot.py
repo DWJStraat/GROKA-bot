@@ -539,6 +539,11 @@ def profile(naam, message):
         else:
             telegram_list = "Niet gevonden"
         print(telegram_list)
+        print(User.naam)
+        print(User.getTroop())
+        print(User.getCommissie())
+        print(User.getPhone())
+
         bot.send_message(message.chat.id, f"Naam: {User.naam}"
                                           f"\nSpeltak: {User.getTroop()}"
                                           f"\nCommissie: {User.getCommissie()}"
