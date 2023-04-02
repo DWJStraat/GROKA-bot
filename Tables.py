@@ -264,3 +264,9 @@ class Schedules_today(Table):
         elif entries == 1:
             return bot_text[0][0]
 
+def TroopInfo(name):
+    table = Table('VwBotTextTroopInfo')
+    contents = table.query(f"SELECT BotText FROM VwBotTextTroopInfo WHERE Troop = '{name}' ORDER BY OrderBy")
+    output_list = [i[0] for i in contents]
+    return "\n".join(output_list)
+

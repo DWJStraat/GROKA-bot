@@ -271,20 +271,8 @@ def myspeltak(message):
         try:
             naam = Telegram().get_name(telegram_id)
             troopname = Leiding(naam).getTroop()
-            troop = Speltak(troopname)
-            leden = troop.getMembers()
-            leiding = troop.getLeiding()
-            leiding.remove(naam)
-            output = ''
-            for i in leiding:
-                if i == leiding[-1]:
-                    output += 'en '
-                output += f"{i}"
-                if i != leiding[-1]:
-                    output += ', '
-            bot.send_message(message.chat.id, f"Je bent leiding van {troopname}, samen met {output}. Jullie hebben"
-                                              f" {leden} leden."
-                             )
+            output = TroopInfo(troopname)
+            bot.send_message(message.chat.id, output)
         except mariadb.Error:
             bot.send_message(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
                                               "je te registreren.")
@@ -303,16 +291,8 @@ def speltak2(message):
     try:
         troopname = message.text
         try:
-            leiding = Speltak(troopname).getLeiding()
-            leden = Speltak(troopname).getMembers()
-            output = ''
-            for i in leiding:
-                if i == leiding[-1]:
-                    output += 'en '
-                output += f"{i}"
-                if i != leiding[-1]:
-                    output += ', '
-            bot.send_message(message.chat.id, f"De leiding van {troopname} zijn {output}. Zij hebben {leden} leden.")
+            output = TroopInfo(troopname)
+            bot.send_message(message.chat.id, output)
         except mariadb.Error:
             bot.send_message(message.chat.id, "Deze speltak is niet gevonden in de database.")
     except Exception as e:
