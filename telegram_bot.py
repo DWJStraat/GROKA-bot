@@ -4,7 +4,8 @@ import regex as re
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import datetime
-
+import signal
+import sys
 from Tables import *
 
 
@@ -609,11 +610,11 @@ def admin_check(message):
     return False
 
 
-def logger(message, command, input_string=None):
+def logger(message= None, command = None, input_string=None):
     if input_string is None:
         input_string = message.text
     datestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    telegram_id = message.from_user.id
+    telegram_id = "Server" if message is None else message.from_user.id
     command = command
     input_string = input_string or None
     with open('log.txt', 'a') as f:
@@ -622,3 +623,12 @@ def logger(message, command, input_string=None):
 
 print('Running')
 bot.infinity_polling()
+
+def on_exit(sig, frame):
+    print('Shutting down')
+    logger(None, "!!!EXIT!!!", "Shutting down")
+    Server(default_server).close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, on_exit)
+
