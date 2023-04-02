@@ -530,7 +530,6 @@ def profile(naam, message):
     try:
         User = Leiding(naam)
         telegrams = User.getTelegram()
-        print(telegrams)
         if telegrams is list:
             telegram_list = "".join(
                 f"[{i}](tg://user?id={i})\n" for i in User.getTelegram()
@@ -539,6 +538,7 @@ def profile(naam, message):
             telegram_list = f"[{telegrams}](tg://user?id={telegrams})"
         else:
             telegram_list = "Niet gevonden"
+        print(telegram_list)
         bot.send_message(message.chat.id, f"Naam: {User.naam}"
                                           f"\nSpeltak: {User.getTroop()}"
                                           f"\nCommissie: {User.getCommissie()}"
