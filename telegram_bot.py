@@ -1,14 +1,13 @@
+import contextlib
+import datetime
 import random
+import sys
 
 import regex as re
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-import datetime
-import signal
-import sys
+
 from Tables import *
-
-
 
 config = json.load(open("config.json"))
 
@@ -443,7 +442,28 @@ def schedule2(message):
     except Exception as e:
         error_handler(e, message)
 
+@bot.message_handler(commands=['/backup'])
+def backup(message):
+    if Telegram().get_admin(message.from_user.id):
+        try:
+            default_server.execute("""INSERT INTO BU_Job (id, name, ActivityId, description, nLeaders, timestamp)
+                SELECT t.id, t.name, t.ActivityId, t.description, t.nLeaders, NOW()
+                FROM Job t;""")
+            default_server.execute("INSERT INTO BU_Schedule (id, LeaderId, jobId, StartTimeBlockId, EndTimeBlockId, \n"
+                                   "Required, timestamp)\n"
+                                   "SELECT t.id, t.LeaderId, t.jobId, t.StartTimeBlockId, t.EndTimeBlockId, t.Required, NOW()\n"
+                                   "FROM Schedule t;")
+            logger(message, "Backup")
+            bot.send_message(message.chat.id, "Backup gemaakt.")
+        except Exception as e:
+            error_handler(e, message)
 
+@bot.message_handler(commands=['/reload'])
+def reload(message):
+    with contextlib.suppress(Exception):
+        default_server.close()
+    with contextlib.suppress(Exception):
+        default_server.connect()
 @bot.message_handler(commands=['error'])
 def throw_error(message):
     bot.send_message(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
