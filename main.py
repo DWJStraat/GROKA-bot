@@ -20,8 +20,7 @@ class Server:
         self.port = config_json["port"]
         self.connection = None
         self.cursor = None
-        self.connect()
-        self.getCursor()
+
 
     def connect(self):
         self.connection = mariadb.connect(
@@ -39,12 +38,23 @@ class Server:
         self.cursor.close()
         self.getCursor()
 
-    def execute(self, query):
+    def execute(self, query, commit=False):
+        self.connect()
+        self.getCursor()
         try:
             self.cursor.execute(query)
+            if commit:
+                self.connection.commit()
+            try:
+                value = self.cursor.fetchall()
+            except mariadb.ProgrammingError:
+                value = None
+            self.cursor.close()
+            self.close()
         except mariadb.Error as e:
             print(f"Error: {e}\nQuery: {query}")
             raise e
+        return value
 
     def commit(self):
         self.connection.commit()
@@ -75,10 +85,7 @@ class Table:
         return values
 
     def query(self, query):
-        self.server.execute(query)
-        values = self.server.cursor.fetchall()
-        self.server.closeCursor()
-        return values
+        return self.server.execute(query)
 
     def find(self, value, column, return_column):
         self.server.execute(
@@ -107,8 +114,8 @@ class Table:
         self.server.closeCursor()
         return values
 
-    def execute(self, query):
-        self.server.execute(query)
+    def execute(self, query, commit=False):
+        return self.server.execute(query, commit)
 
     def commit(self):
         self.server.commit()

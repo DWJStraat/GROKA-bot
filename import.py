@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def import_schedule(dialog=True):
-    with open(r"C:\Users\dstra\Downloads\Planning Groka.csv", 'r', encoding='utf8') as f:
+    with open(r"C:\Users\dstra\Downloads\Planning Groka_voor csv.csv", 'r', encoding='utf8') as f:
         schedule = pd.read_csv(f, sep=';')
     schedule = schedule.set_index('Column1')
     return schedule
@@ -68,19 +68,23 @@ def enter_schedule(schedule_json):
     count = 0
     for i in schedule_json:
         current_task = None
+        activity = None
         start_time = None
         end_time = None
         for j in schedule_json[i]:
             if current_task is None:
                 current_task = schedule_json[i][j]['job']
+            if activity is None:
+                activity = schedule_json[i][j]['activity']
             if start_time is None:
                 start_time = schedule_json[i][j]['timeblock']
+            previous_activity = activity
             previous_task = current_task
             current_task = schedule_json[i][j]['job']
             end_time = schedule_json[i][j]['timeblock']
             activity = schedule_json[i][j]['activity']
             if current_task != previous_task:
-                activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = "{activity}" LIMIT 1')[0][0]
+                activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = "{previous_activity}" LIMIT 1')[0][0]
                 job_id = handle_job(previous_task, activity_id)
                 with contextlib.suppress(Exception):
                     job_id = job_id[0][0]

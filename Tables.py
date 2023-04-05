@@ -29,14 +29,11 @@ class Telegram(Table):
         leader_id = int(Leader_Table().get_id(naam))
         telegram_id = str(telegram_id)
         query = f"REPLACE INTO Telegram VALUES ({telegram_id}, {leader_id}, null)"
-        self.execute(query)
-        self.commit()
+        self.execute(query, commit=True)
 
     def set_admin(self, telegram_id):
         query = f"UPDATE Telegram SET admin = 1 WHERE telegramid = {telegram_id}"
-        self.execute(query)
-        self.commit()
-
+        self.execute(query, commit= True)
     def get_admin(self, telegram_id):
         query = f"SELECT admin FROM Telegram WHERE telegramid = {telegram_id}"
         return self.query(query)[0][0]
@@ -92,7 +89,7 @@ class Leader_Table(Table):
 
     def get_id(self, name=None):
         if name is not None:
-            return self.query(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
+            return self.execute(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
         result = self.query(f"SELECT id FROM {self.name}")
         for i in range(len(result)):
             result[i] = result[i][0]
