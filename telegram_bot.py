@@ -127,12 +127,13 @@ def about_me(message):
             telegram_user = message.from_user.id
             try:
                 naam = Telegram().get_name(telegram_user)
+                print(naam)
                 profile(naam, message)
             except mariadb.Error:
                 bot.send_message(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
                                                   "je te registreren.")
     except Exception as e:
-        error_handler(e, message, command= 'overmij')
+        error_handler(e, message, command='overmij')
 
 
 @bot.message_handler(commands=['over'])
@@ -205,7 +206,7 @@ def soon2(message):
             naam = message.text
             bot.send_message(message.chat.id, Schedules_Next().get_schedule(naam))
     except Exception as e:
-        error_handler(e, message,command='straks')
+        error_handler(e, message, command='straks')
 
 
 @bot.message_handler(commands=['mijnrooster', 'mijnvandaag'])
@@ -442,6 +443,7 @@ def schedule2(message):
     except Exception as e:
         error_handler(e, message)
 
+
 @bot.message_handler(commands=['/backup'])
 def backup(message):
     if Telegram().get_admin(message.from_user.id):
@@ -458,12 +460,15 @@ def backup(message):
         except Exception as e:
             error_handler(e, message)
 
+
 @bot.message_handler(commands=['/reload'])
 def reload(message):
     with contextlib.suppress(Exception):
         default_server.close()
     with contextlib.suppress(Exception):
         default_server.connect()
+
+
 @bot.message_handler(commands=['error'])
 def throw_error(message):
     bot.send_message(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
@@ -474,6 +479,7 @@ def throw_error(message):
     except Exception as e:
         error_handler(e, message)
 
+
 # Eastereggs
 
 @bot.message_handler(commands=["haarlijn_jorik"])
@@ -483,9 +489,11 @@ def haarlijn(message):
 
 @bot.message_handler(commands=["pingelen"])
 def pingelen(message):
-    bot.send_message(message.chat.id, "Welkom bij Commando Pingelen. Als je een commando krijgt, volg het commando. Zo niet,"
-                                      "doe '...'")
+    bot.send_message(message.chat.id,
+                     "Welkom bij Commando Pingelen. Als je een commando krijgt, volg het commando. Zo niet,"
+                     "doe '...'")
     pingelen2(message)
+
 
 def pingelen2(message):
     pingelen = [
@@ -502,7 +510,8 @@ def pingelen2(message):
     bot.send_message(message.chat.id, commando)
     bot.register_next_step_handler(message, pingelen3, commando)
 
-def pingelen3 (message, commando):
+
+def pingelen3(message, commando):
     if commando == "Commando pingelen":
         output = "Pingelen"
     elif commando == "Commando bol":
@@ -519,10 +528,10 @@ def pingelen3 (message, commando):
     else:
         bot.send_message(message.chat.id, "Helaas, probeer het nog eens.")
 
+
 @bot.message_handler(commands=["stress"])
 def stress(message):
     bot.send_message(message.chat.id, "https://www.youtube.com/watch?v=logaMSPVV-E")
-
 
 
 # Algemene functies
@@ -603,14 +612,14 @@ def soon_function(naam, message):
 
 # Safety Features
 
-def error_handler(e, message, do_not_log=False, command = None):
+def error_handler(e, message, do_not_log=False, command=None):
     bot.send_message(message.chat.id,
                      f"Er is iets fout gegaan, probeer het "
                      f"opnieuw.\n\nAls het probleem zich blijft herhalen, "
                      f"neem contact op met de beheerder.\n"
                      f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
     if not do_not_log:
-        logger(message, f"!!!ERROR{command}!!!", str(e))
+        logger(message, f"!!!ERROR {command}!!!", str(e))
     print(e)
 
 
@@ -630,7 +639,7 @@ def admin_check(message):
     return False
 
 
-def logger(message= None, command = None, input_string=None):
+def logger(message=None, command=None, input_string=None):
     if input_string is None:
         input_string = message.text
     datestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -642,6 +651,7 @@ def logger(message= None, command = None, input_string=None):
 
 
 import contextlib
+
 print('Running')
 try:
     with contextlib.suppress(Exception):
@@ -653,4 +663,3 @@ finally:
     logger(None, "!!!EXIT!!!", "Shutting down")
     default_server.close()
     sys.exit(0)
-
