@@ -78,11 +78,9 @@ class Table:
             self.server = default_server
 
     def retrieve(self, value, column):
-        self.server.execute(
+        return self.server.execute(
             f"SELECT * FROM {self.name} WHERE {column} = '{value}';")
-        values = self.server.cursor.fetchall()
-        self.server.closeCursor()
-        return values
+
 
     def query(self, query):
         return self.server.execute(query)
