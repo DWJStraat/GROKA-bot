@@ -15,7 +15,10 @@ class Telegram(Table):
     def get_id(self, name):
         try:
             user_id = Leader_Table().get_id(name)
-            return self.query(f'SELECT telegramid FROM {self.name} WHERE LeaderId = {user_id}')[0][0]
+            ids = self.query(f'SELECT telegramid FROM {self.name} WHERE LeaderId = {user_id}')
+            output = [i[0] for i in ids]
+            print(f'output:{output}')
+            return output
         except IndexError:
             return None
 
@@ -96,8 +99,12 @@ class Leader_Table(Table):
         return result
 
     def get_EHBO(self):
-        EHBOers = self.query(f"SELECT id FROM {self.name} WHERE EHBO = 1")
+        EHBOers = self.query(f"SELECT id FROM {self.name} WHERE EHBO_team = 1")
         return [user[0] for user in EHBOers]
+
+    def get_admin(self):
+        admins = self.query(f"SELECT id FROM {self.name} WHERE admin = 1")
+        return [user[0] for user in admins]
 
     def check_name(self, name):
         name = self.query(f"SELECT name FROM {self.name} WHERE name = '{name}'")

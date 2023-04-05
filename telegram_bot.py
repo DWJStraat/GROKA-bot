@@ -308,7 +308,7 @@ def feedback(message):
 
 
 # Noodgeval functies
-@bot.message_handler(commands=['SOS'])
+@bot.message_handler(commands=['SOS','sos'])
 def EHBOmsg(message):
     if register_check(message):
         bot.send_message(message.chat.id, "Wat is de boodschap? Geef hierin door waar je bent en wat er is gebeurd.")
@@ -327,9 +327,7 @@ def EHBOmsg2(message):
         EHBO_id = Leader_Table().get_EHBO()
         EHBO_names = [Leader_Table().get_name(i) for i in EHBO_id]
         EHBO_telegram = [Leiding(i).getTelegram() for i in EHBO_names]
-        for i in EHBO_telegram:
-            if i is not None:
-                bot.send_message(i, EHBOmessage, parse_mode="Markdown")
+        mass_message(EHBOmessage, admin = True, EHBO  = True)
         EHBO_name_string = ", ".join(EHBO_names)
         bot.send_message(message.chat.id, f"De EHBO-ers zijn {EHBO_name_string} en hebben een bericht gekregen.")
     except Exception as e:
@@ -477,8 +475,18 @@ def throw_error(message):
     try:
         string[1]
     except Exception as e:
-        error_handler(e, message)
+        error_handler(e, message, do_not_log=True)
 
+@bot.message_handler(commands=['/error'])
+def admin_error(message):
+    if Telegram().get_admin(message.from_user.id):
+        bot.send_message(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
+                                          "Neem geen contact op met de ontwikkelaars.")
+        string = ''
+        try:
+            string[1]
+        except Exception as e:
+            error_handler(e, message)
 
 # Eastereggs
 
@@ -540,25 +548,28 @@ def profile(naam, message):
     try:
         User = Leiding(naam)
         telegrams = User.getTelegram()
-        if telegrams is list:
+        print(len(telegrams))
+        if len(telegrams) > 1:
+            print('multi')
             telegram_list = "".join(
                 f"[{i}](tg://user?id={i})\n" for i in User.getTelegram()
             )
-        elif telegrams is str or int:
+
+        elif len(telegrams) == 1:
             telegram_list = f"[{telegrams}](tg://user?id={telegrams})"
         else:
             telegram_list = "Niet gevonden"
         print(telegram_list)
-        print(User.naam)
-        print(User.getTroop())
-        print(User.getCommissie())
-        print(User.getPhone())
-
-        bot.send_message(message.chat.id, f"Naam: {User.naam}"
-                                          f"\nSpeltak: {User.getTroop()}"
-                                          f"\nCommissie: {User.getCommissie()}"
-                                          f"\nTelefoonnummer: {User.getPhone()}"
-                                          f"\nTelegram: {telegram_list}",
+        Output_list = Table('VwBotTextLeaderInfo').query(
+            f"SELECT BotText FROM VwBotTextLeaderInfo WHERE Leader = '{naam}' ORDER BY OrderBy")
+        for i in range(len(Output_list)):
+            string = Output_list[i][0]
+            if string is not tuple:
+                Output_list[i] = string
+        Output_list.append(f"Telegram:\n{telegram_list}")
+        print(Output_list)
+        output = "\n".join(Output_list)
+        bot.send_message(message.chat.id, output,
                          parse_mode="Markdown"
                          )
     except mariadb.ProgrammingError:
@@ -619,10 +630,37 @@ def error_handler(e, message, do_not_log=False, command=None):
                      f"neem contact op met de beheerder.\n"
                      f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
     if not do_not_log:
+        user_id = message.from_user.id
         logger(message, f"!!!ERROR {command}!!!", str(e))
-    print(e)
+        admin_message = f"ERROR\n" \
+                        f"User: {user_id}\n" \
+                        f"Command: {command}\n" \
+                        f"Input: {message.text}\n" \
+                        f"Error: \n" \
+                        f"```{str(e)}```"
+        mass_message(admin_message, admin=True)
+        print(e)
 
 
+def mass_message(message, admin = False, EHBO = False, everyone = False):
+    id = []
+    if admin:
+        with contextlib.suppress(Exception):
+            admin_id = Leader_Table().get_admin()
+            id += admin_id
+    if EHBO:
+        with contextlib.suppress(Exception):
+            EHBO_id = Leader_Table().get_EHBO()
+            id += EHBO_id
+    if everyone:
+        with contextlib.suppress(Exception):
+            id += Telegram().query("SELECT TelegramID FROM Telegram")
+    names = [Leader_Table().get_name(i) for i in id]
+    telegram = [Leiding(i).getTelegram() for i in names]
+    for i in telegram:
+        if i is not None:
+            bot.send_message(i[0], message, parse_mode="Markdown")
+            print(i)
 def register_check(message):
     try:
         Telegram().get_name(message.from_user.id)

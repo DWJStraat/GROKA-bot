@@ -7,9 +7,9 @@ restart_timer = 2
 
 def start_script():
     try:
-        run(f"python3{file_path}", check=True)
-    except Exception:
-        print("Error while starting script")
+        run(f"python{file_path}", check=True)
+    except Exception as e:
+        print(f"Error while starting script:\n{e}")
         handle_crash()
 
 def handle_crash():
