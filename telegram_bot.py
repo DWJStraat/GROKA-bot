@@ -459,14 +459,6 @@ def backup(message):
             error_handler(e, message)
 
 
-@bot.message_handler(commands=['/reload'])
-def reload(message):
-    with contextlib.suppress(Exception):
-        default_server.close()
-    with contextlib.suppress(Exception):
-        default_server.connect()
-
-
 @bot.message_handler(commands=['error'])
 def throw_error(message):
     bot.send_message(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "

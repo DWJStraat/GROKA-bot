@@ -92,7 +92,11 @@ class Leader_Table(Table):
 
     def get_id(self, name=None):
         if name is not None:
-            return self.execute(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
+            try:
+                return self.execute(f"SELECT id FROM {self.name} WHERE name = '{name}'")[0][0]
+            except IndexError:
+                print("Invalid Error")
+                return None
         result = self.query(f"SELECT id FROM {self.name}")
         for i in range(len(result)):
             result[i] = result[i][0]

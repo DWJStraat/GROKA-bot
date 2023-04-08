@@ -35,8 +35,7 @@ def handle_job(job_name, activity_id):
     job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = {activity_id} LIMIT 1')
     if len(job_id) < 1:
         print(f'Job {job_name} not found in database')
-        job.execute(f'INSERT INTO Job (name, ActivityId) VALUES ("{job_name}", {activity_id})')
-        job.commit()
+        job.execute(f'INSERT INTO Job (name, ActivityId) VALUES ("{job_name}", {activity_id})', commit=True)
         print(f'Job {job_name} added to database')
         job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = {activity_id} LIMIT 1')
     else:
@@ -84,14 +83,20 @@ def enter_schedule(schedule_json):
             end_time = schedule_json[i][j]['timeblock']
             activity = schedule_json[i][j]['activity']
             if current_task != previous_task:
-                activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = "{previous_activity}" LIMIT 1')[0][0]
+                try:
+                    activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = "{previous_activity}" LIMIT 1')[0][0]
+                except IndexError:
+                    print(f'Activity {previous_activity} not found in database')
                 job_id = handle_job(previous_task, activity_id)
                 with contextlib.suppress(Exception):
                     job_id = job_id[0][0]
                 leader_id = Leader_Table().get_id(i)
                 query = f'INSERT INTO Schedule (LeaderId, JobId, StartTimeBlockId, EndTimeBlockId) VALUES ({leader_id}, {job_id}, {start_time}, {end_time})'
-                schedule.execute(query)
-                schedule.commit()
+                try:
+                    schedule.execute(query, commit=True)
+                except Exception as e:
+                    print(e)
+                    print(query)
                 start_time = None
         print(f'Leader {i} added to database')
 
@@ -103,7 +108,6 @@ schedule_json = schedule_to_json(schedule)
 print('Schedule converted to json')
 enter_schedule(schedule_json)
 
-default_server.close()
 
 print('=' * 50)
 print('Done')
