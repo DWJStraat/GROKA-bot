@@ -608,7 +608,7 @@ def mass_message(message, admin = False, EHBO = False, everyone = False):
     telegram = [Leiding(i).getTelegram() for i in names]
     for i in telegram:
         if i is not None:
-            message_handler(i[0], message, parse_mode="Markdown")
+            message_handler(int(i[0]), message, parse_mode="Markdown")
             print(i)
 
 
@@ -624,7 +624,7 @@ def error_handler(e, message, do_not_log=False, command=None):
         user_id = message.from_user.id
         logger(message, f"!!!ERROR {command}!!!", str(e))
         admin_message = f"ERROR\n" \
-                        f"User: {user_id}\n" \
+                        f"User: [{user_id}](tg://user?id={user_id})\n" \
                         f"Command: {command}\n" \
                         f"Input: {message.text}\n" \
                         f"Error: \n" \
