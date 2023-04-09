@@ -2,6 +2,7 @@ import contextlib
 import datetime
 import random
 import sys
+from fpdf import FPDF
 
 import regex as re
 import telebot
@@ -502,6 +503,25 @@ def backup(message):
         except Exception as e:
             error_handler(e, message)
 
+@bot.message_handler(commands=['/pdftotaalrooster'])
+def pdftotaalrooster(message):
+    if Telegram().get_admin(message.from_user.id):
+        message_handler(message.chat.id, 'Van wie wil je het totaalrooster exporteren naar een PDF?')
+        bot.register_next_step_handler(message, pdftotaalrooster2)
+
+def pdftotaalrooster2(message):
+    try:
+        if Telegram().get_admin(message.from_user.id):
+            name = message.text
+            if Leader_Table().check_name(name):
+                schedule_pdf_generator(message, name)
+            else:
+                message_handler(message.chat.id, "Deze naam is niet gevonden.")
+    except Exception as e:
+        error_handler(e, message)
+
+
+
 # Debug commands
 
 @bot.message_handler(commands=['error'])
@@ -582,6 +602,22 @@ def stress(message):
 
 
 # Algemene functies
+
+def schedule_pdf_generator(message, name):
+    message_handler(message.chat.id, "Het totaalrooster wordt gegenereerd...")
+    output = total_schedule(name)
+    output = output.replace(';', '\t')
+    output = output.replace('-', ' - ')
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 16)
+    pdf.cell(40, 10, 'Totaalrooster')
+    pdf.ln(10)
+    pdf.set_font('Arial', '', 12)
+    pdf.multi_cell(0, 5, output)
+    pdf.output('totaalrooster.pdf', 'F')
+    message_handler(message.chat.id, "Het totaalrooster is gegenereerd.")
+    bot.send_document(message.chat.id, open('totaalrooster.pdf', 'rb'))
 
 def profile(naam, message):
     try:
