@@ -147,7 +147,11 @@ def about2(message):
     try:
         naam = message.text
         logger(message, 'over', naam)
-        profile(naam, message)
+        try:
+            profile(naam, message)
+        except IndexError:
+            message_handler(message.chat.id, "Deze persoon is niet gevonden in de "
+                                              "database, probeer het opnieuw.")
     except Exception as e:
         error_handler(e, message, command='over')
 
