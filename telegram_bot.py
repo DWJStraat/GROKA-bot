@@ -293,7 +293,10 @@ def speltak2(message):
         troopname = message.text
         try:
             output = TroopInfo(troopname)
-            bot.send_message(message.chat.id, output)
+            try:
+                bot.send_message(message.chat.id, output)
+            except Exception:
+                bot.send_message(message.chat.id, "Deze speltak is niet gevonden")
         except mariadb.Error:
             bot.send_message(message.chat.id, "Deze speltak is niet gevonden in de database.")
     except Exception as e:
