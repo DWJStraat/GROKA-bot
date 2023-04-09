@@ -572,49 +572,6 @@ def profile(naam, message):
         error_handler(mariadb.ProgrammingError, message)
 
 
-def button_build(names, values):
-    return [
-        [InlineKeyboardButton(text=names, url=values)]
-        for _ in range(len(values))
-    ]
-
-
-def location_buttons(location_dictionary):
-    location = list(location_dictionary.keys())
-    location_urls = list(location_dictionary.values())
-    return button_build(location, location_urls)
-
-
-def schedule_now(name):
-    output = Schedules_now().get_schedule(name)
-    return re.sub(r'(?<=[.,])(?=[^\s])', r' ', output)
-
-
-def schedule_next(name):
-    output = Schedules_Next().get_schedule(name)
-    return re.sub(r'(?<=[.,])(?=[^\s])', r' ', output)
-
-
-def now_function(naam, message):
-    location_dict = Tijdblok().get_locations(naam)
-    location = list(location_dict.keys())
-    location_urls = list(location_dict.values())
-    inline_keyboard = [
-        [InlineKeyboardButton(text=location[i], url=location_urls[i])]
-        for i in range(len(location))
-    ]
-    bot.send_message(message.chat.id, schedule_now(naam), reply_markup=InlineKeyboardMarkup(inline_keyboard))
-
-
-def soon_function(naam, message):
-    location_dict = Schedules_Next().get_locations(naam)
-    location = list(location_dict.keys())
-    location_urls = list(location_dict.values())
-    inline_keyboard = [
-        [InlineKeyboardButton(text=location[i], url=location_urls[i])]
-        for i in range(len(location))
-    ]
-    bot.send_message(message.chat.id, schedule_next(naam), reply_markup=InlineKeyboardMarkup(inline_keyboard))
 
 
 # Safety Features
