@@ -128,8 +128,9 @@ class Leiding(Table):
         return Team().find(TeamId, "id", "name")[0][0]
 
     def getTroop(self):
-        TroopId = self.find(self.id, "id", "TroopId")[0][0]
-        return Speltak().find(TroopId, "Id", "Name")[0][0]
+        TroopId = self.execute(f"SELECT TroopId FROM Leader WHERE id = {self.id}")[0][0]
+        speltak = self.execute(f"SELECT Name FROM Troop WHERE id = {TroopId}")[0][0]
+        return speltak
 
     def getPhone(self):
         phone_nr = self.find(self.id, "id", "phone_nr")[0][0]
