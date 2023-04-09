@@ -416,7 +416,7 @@ def leiding(message):
         leaders = Leader_Table().execute(query)
         leader_list = [f"{leader[0]}\n" for leader in leaders]
         leader_list = "".join(leader_list)
-        message_handler(message, f"De leiding is:\n=========\n{leader_list}")
+        message_handler(message.chat.id, f"De leiding is:\n=========\n{leader_list}")
     except Exception as e:
         error_handler(e, message, command='leiding')
 
