@@ -544,10 +544,11 @@ def profile(naam, message):
         if len(telegrams) > 1:
             print('multi')
             telegram_list = "".join(
-                f"[{i}](tg://user?id={i})\n" for i in User.getTelegram()
+                f"[{int(i)}](tg://user?id={int(i)})\n" for i in User.getTelegram()
             )
 
         elif len(telegrams) == 1:
+            telegrams = int(telegrams[0])
             telegram_list = f"[{telegrams}](tg://user?id={telegrams})"
         else:
             telegram_list = "Niet gevonden"
