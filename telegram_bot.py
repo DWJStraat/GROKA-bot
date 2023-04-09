@@ -42,7 +42,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0.1"
+                    "\nHuidige versie: Closed Beta 1.0.3"
                     )
 
 
@@ -551,6 +551,12 @@ def pdftotaalrooster2(message):
     except Exception as e:
         error_handler(e, message)
 
+@bot.message_handler(commands=['/pdf_all'])
+def pdf_all(message):
+    if Telegram().get_admin(message.from_user.id):
+        users = Leader_Table().get_name()
+        schedule_pdf_generator(message, users)
+
 
 # Debug commands
 
@@ -644,22 +650,30 @@ def stress(message):
 
 # Algemene functies
 
-def schedule_pdf_generator(message, name):
+def schedule_pdf_generator(message, names):
+    if type(names) != list :
+        names = [names]
     message_handler(message.chat.id, "Het totaalrooster wordt gegenereerd...")
-    output = total_schedule(name)
-    output = output.replace(';', '\t')
-    output = output.replace('-', ' - ')
     pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font('Arial', 'B', 16)
-    pdf.cell(40, 10, f'Totaalrooster van {name}')
-    pdf.ln(10)
-    pdf.set_font('Arial', '', 12)
-    pdf.multi_cell(0, 5, output)
+    for name in names:
+        output = total_schedule(name)
+        output = output.replace(';', '\t')
+        output = output.replace('-', ' - ')
+        pdf.add_page()
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(40, 10, f'Totaalrooster van {name}')
+        pdf.ln(10)
+        pdf.set_font('Arial', '', 12)
+        pdf.multi_cell(0, 5, output)
     pdf.output('totaalrooster.pdf', 'F')
     message_handler(message.chat.id, "Het totaalrooster is gegenereerd.")
     bot.send_document(message.chat.id, open('totaalrooster.pdf', 'rb'))
 
+def total_schedule(naam):
+    schedule_total = Table("VwBotTextScheduleTotal")
+    user_schedule = schedule_total.query(f"SELECT Bottext FROM VwBotTextScheduleTotal WHERE Leader = '{naam}' "
+                                         f"ORDER BY  Orderby, starttime")
+    return "\n".join(i[0] for i in user_schedule)
 
 def profile(naam, message):
     try:
@@ -694,11 +708,7 @@ def profile(naam, message):
         error_handler(mariadb.ProgrammingError, message)
 
 
-def total_schedule(naam):
-    schedule_total = Table("VwBotTextScheduleTotal")
-    user_schedule = schedule_total.query(f"SELECT Bottext FROM VwBotTextScheduleTotal WHERE Leader = '{naam}' "
-                                         f"ORDER BY  Orderby")
-    return "\n".join(i[0] for i in user_schedule)
+
 
 
 def mass_message(message, target_admin=False, target_ehbo=False, target_everyone=False):
