@@ -376,15 +376,17 @@ def EHBOmsg2(message):
                       f"heeft het volgende bericht gestuurd: \n" \
                       f"{EHBOinput}"
         EHBO_id = Leader_Table().get_EHBO()
+        print(EHBO_id)
         EHBO_names = [Leader_Table().get_name(i) for i in EHBO_id]
         mass_message(EHBOmessage, target_admin=True, target_ehbo=True)
+        print("message sent")
         EHBO_name_string = ", ".join(EHBO_names)
         message_handler(message.chat.id, f"De EHBO-ers zijn {EHBO_name_string} en hebben een bericht gekregen.")
     except Exception as e:
         error_handler(e, message, command='SOS')
 
 
-@bot.message_handler(commands=['EHBOers'])
+@bot.message_handler(commands=['EHBOers', 'ehboers'])
 def EHBOers(message):
     try:
         if not register_check(message):
@@ -712,11 +714,20 @@ def mass_message(message, target_admin=False, target_ehbo=False, target_everyone
     if target_everyone:
         with contextlib.suppress(Exception):
             telegram_ids += Telegram().query("SELECT TelegramID FROM Telegram")
-    names = [Leader_Table().get_name(i) for i in telegram_ids]
-    telegram = [Leiding(i).getTelegram() for i in names]
+    telegram = []
+    for i in telegram_ids:
+        if i is not None:
+            name = Leader_Table().get_name(i)
+            try:
+                tele_id = Leiding(name).getTelegram()
+                telegram.append(tele_id)
+            except Exception:
+                telegram.append(None)
+    print(telegram)
     for i in telegram:
         if i is not None:
-            message_handler(int(i[0]), message, parse_mode="Markdown")
+            with contextlib.suppress(Exception):
+                message_handler(int(i[0]), message, parse_mode="Markdown")
             print(i)
 
 

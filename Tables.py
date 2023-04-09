@@ -17,7 +17,6 @@ class Telegram(Table):
             user_id = Leader_Table().get_id(name)
             ids = self.query(f'SELECT telegramid FROM {self.name} WHERE LeaderId = {user_id}')
             output = [i[0] for i in ids]
-            print(f'output:{output}')
             return output
         except IndexError:
             return None
@@ -141,6 +140,8 @@ class Leiding(Table):
             return Telegram().get_id(self.naam)
         except AttributeError:
             return "Geen telegram account bekend"
+        except IndexError:
+            return None
 
     def get_EHBO(self):
         EHBO = self.find(self.id, "id", "EHBO")[0][0]
