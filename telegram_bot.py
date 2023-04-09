@@ -264,7 +264,31 @@ def morgen2(message):
     except Exception as e:
         error_handler(e, message, command='morgen')
 
+@bot.message_handler(commands=['mijntotaalrooster'])
+def mytotaalrooster(message):
+    try:
+        if register_check(message):
+            telegram_id = message.from_user.id
+            naam = Telegram().get_name(telegram_id)
+            totaal_rooster = total_schedule(naam)
+            message_handler(message.chat.id, totaal_rooster)
+    except Exception as e:
+        error_handler(e, message, command='mijntotaalrooster')
 
+@bot.message_handler(commands=['totaalrooster'])
+def totaalrooster(message):
+    if register_check(message):
+        message_handler(message.chat.id, "Van wie wil je het rooster zien?")
+        bot.register_next_step_handler(message, totaalrooster2)
+
+def totaalrooster2(message):
+    try:
+        naam = message.text
+        totaal_rooster = total_schedule(naam)
+        if message_handler(message.chat.id, totaal_rooster) == False:
+            message_handler(message.chat.id, "Deze persoon is niet bekend in het systeem.")
+    except Exception as e:
+        error_handler(e, message, command='totaalrooster')
 # Info commands
 
 @bot.message_handler(commands=['mijnspeltak'])
@@ -591,6 +615,13 @@ def profile(naam, message):
     except mariadb.ProgrammingError:
         error_handler(mariadb.ProgrammingError, message)
 
+def total_schedule(naam):
+    schedule_total = Table("VwBotTextScheduleTotal")
+    user_schedule = schedule_total.query(f"SELECT Bottext FROM VwBotTextScheduleTotal WHERE Leader = '{naam}' "
+                                         f"ORDER BY  Orderby")
+    output = "\n".join(i[0] for i in user_schedule)
+    return output
+
 def mass_message(message, admin = False, EHBO = False, everyone = False):
     id = []
     if admin:
@@ -637,6 +668,8 @@ def message_handler(message_object, content, parse_mode = None):
         id = message_object
     else:
         id = message_object.chat.id
+    if content is None or content == "":
+        return False
     if len(content) > 4096:
         message_list = [
             f"{content[i:i + 4096]}" for i in range(0, len(content), 4096)
