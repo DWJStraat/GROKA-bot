@@ -1,12 +1,9 @@
-import contextlib
 import datetime
 import random
 import sys
-from fpdf import FPDF
-
-import regex as re
+import contextlib
 import telebot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from fpdf import FPDF
 
 from Tables import *
 
@@ -20,63 +17,76 @@ schedule = Schedules_today()
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
     message_handler(message.chat.id,
-                     "Hallo, ik ben de rooster bot van de scouting voor "
-                     "GROKA 2023. "
-                     "\nDoe als eerste /aanmelden; pas als je aangemeld "
-                     "ben kan je bij alle functies IVM privacy."
-                     "\n"
-                     "\nStuur /aanmelden om je te registreren. Hiervoor"
-                     "heb je een wachtwoord nodig."
-                     "\n"
-                     "\nStuur /roosterhelp om hulp te krijgen met het "
-                     "rooster."
-                     "\nStuur /infohelp om hulp te krijgen met het "
-                     "bekijken van profielen en speltakken"
-                     "\n"
-                     "\nStuur /help of /start om dit bericht opnieuw te zien."
-                     "\n"
-                     "\nDeze bot is geschreven door David Straat (Mang van de "
-                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
-                     "opmerkingen kan je contact met mij opnemen d.m.v. "
-                     "/feedback."
-                     )
+                    "Hallo, ik ben de rooster bot van de scouting voor "
+                    "GROKA 2023. "
+                    "\nDoe als eerste /aanmelden; pas als je aangemeld "
+                    "ben kan je bij alle functies IVM privacy."
+                    "\n"
+                    "\nStuur /aanmelden om je te registreren. Hiervoor"
+                    "heb je een wachtwoord nodig."
+                    "\n"
+                    "\nStuur /roosterhelp om hulp te krijgen met het "
+                    "rooster."
+                    "\nStuur /infohelp om hulp te krijgen met het "
+                    "bekijken van profielen en speltakken"
+                    "\n"
+                    "\nStuur /help of /start om dit bericht opnieuw te zien."
+                    "\n"
+                    "\nIn geval van nood:"
+                    "\n - stuur /EHBOers om de EHBOers te zien en makkelijk "
+                    "contact met ze op te nemen."
+                    "\n - stuur /SOS als je echt in nood bent. Dit stuurt "
+                    "een bericht naar de EHBOers."
+                    "\nDeze bot is geschreven door David Straat (Mang van de "
+                    "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
+                    "opmerkingen kan je contact met mij opnemen d.m.v. "
+                    "/feedback."
+                    "\n"
+                    "\nHuidige versie: Closed Beta 1.0"
+                    )
 
 
 @bot.message_handler(commands=['roosterhelp'])
 def roosterhelp(message):
     message_handler(message.chat.id,
-                     "Stuur /mijnnu om je rooster van nu op te vragen."
-                     "\nStuur /mijnvandaag om je rooster van vandaag op te "
-                     "vragen."
-                     "\nStuur /mijnmorgen om je rooster van morgen op te "
-                     "vragen."
-                     "\n"
-                     "\nStuur /nu om het rooster van een andere leiding op "
-                     "te vragen."
-                     "\nStuur /vandaag om het rooster van een andere leiding "
-                     "op te vragen."
-                     "\nStuur /morgen om het rooster van een andere leiding "
-                     "op te vragen."
-                     "\nDeze bot is geschreven door David Straat (Mang van de "
-                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
-                     "opmerkingen kan je contact met mij opnemen d.m.v. "
-                     "/feedback."
-                     )
+                    "Stuur /mijnnu om je rooster van nu op te vragen."
+                    "\nStuur /mijnvandaag om je rooster van vandaag op te "
+                    "vragen."
+                    "\nStuur /mijnmorgen om je rooster van morgen op te "
+                    "vragen."
+                    "\nStuur /mijntotaalrooster om je totaalrooster op te "
+                    "vragen."
+                    "\n"
+                    "\nStuur /nu om het rooster van een andere leiding op "
+                    "te vragen."
+                    "\nStuur /vandaag om het rooster van een andere leiding "
+                    "op te vragen."
+                    "\nStuur /morgen om het rooster van een andere leiding "
+                    "op te vragen."
+                    "\nStuur /totaalrooster om het totaalrooster van een andere"
+                    "leiding op te vragen."
+                    "\nDeze bot is geschreven door David Straat (Mang van de "
+                    "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
+                    "opmerkingen kan je contact met mij opnemen d.m.v. "
+                    "/feedback."
+                    )
 
 
 @bot.message_handler(commands=['infohelp'])
 def infohelp(message):
     message_handler(message.chat.id,
-                     "Stuur /overmij om je profiel te bekijken."
-                     "\nStuur /over om het profiel van iemand anders te "
-                     "bekijken."
-                     "\nStuur /mijnspeltak om je speltak te bekijken."
-                     "\nStuur /speltak om een andere spelak te bekijken. "
-                     "\nDeze bot is geschreven door David Straat (Mang van de "
-                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
-                     "opmerkingen kan je contact met mij opnemen d.m.v. "
-                     "/feedback."
-                     )
+                    "Stuur /overmij om je profiel te bekijken."
+                    "\nStuur /over om het profiel van iemand anders te "
+                    "bekijken."
+                    "\nStuur /mijnspeltak om je speltak te bekijken."
+                    "\nStuur /speltak om een andere spelak te bekijken. "
+                    "\nStuur /leiding om alle ingeschreven leiding te zien."
+                    "\nStuur /groepen om alle ingeschreven groepen te zien."
+                    "\nDeze bot is geschreven door David Straat (Mang van de "
+                    "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
+                    "opmerkingen kan je contact met mij opnemen d.m.v. "
+                    "/feedback."
+                    )
 
 
 @bot.message_handler(commands=['aanmelden'])
@@ -92,12 +102,12 @@ def password2(message):
         register(message)
     else:
         message_handler(message.chat.id, "Het wachtwoord is onjuist. Voer het commando opnieuw in of vraag hulp"
-                                          "aan het planning team.")
+                                         "aan het planning team.")
 
 
 def register(message):
     message_handler(message.chat.id,
-                     "Hallo leidings, wat is je naam?")
+                    "Hallo leidings, wat is je naam?")
     bot.register_next_step_handler(message, register2)
 
 
@@ -116,7 +126,7 @@ def register2(message):
             message_handler(message.chat.id, f"Je bent geregistreerd! Welkom, {naam}")
         else:
             message_handler(message.chat.id, "Je naam is niet gevonden in de "
-                                              "database, probeer het opnieuw.")
+                                             "database, probeer het opnieuw.")
     except Exception as e:
         error_handler(e, message, command='aanmelden')
 
@@ -132,7 +142,7 @@ def about_me(message):
                 profile(naam, message)
             except mariadb.Error:
                 message_handler(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
-                                                  "je te registreren.")
+                                                 "je te registreren.")
     except Exception as e:
         error_handler(e, message, command='overmij')
 
@@ -152,7 +162,7 @@ def about2(message):
             profile(naam, message)
         except IndexError:
             message_handler(message.chat.id, "Deze persoon is niet gevonden in de "
-                                              "database, probeer het opnieuw.")
+                                             "database, probeer het opnieuw.")
     except Exception as e:
         error_handler(e, message, command='over')
 
@@ -265,6 +275,7 @@ def morgen2(message):
     except Exception as e:
         error_handler(e, message, command='morgen')
 
+
 @bot.message_handler(commands=['mijntotaalrooster'])
 def mytotaalrooster(message):
     try:
@@ -276,20 +287,24 @@ def mytotaalrooster(message):
     except Exception as e:
         error_handler(e, message, command='mijntotaalrooster')
 
+
 @bot.message_handler(commands=['totaalrooster'])
 def totaalrooster(message):
     if register_check(message):
         message_handler(message.chat.id, "Van wie wil je het rooster zien?")
         bot.register_next_step_handler(message, totaalrooster2)
 
+
 def totaalrooster2(message):
     try:
         naam = message.text
         totaal_rooster = total_schedule(naam)
-        if message_handler(message.chat.id, totaal_rooster) == False:
+        if message_handler(message.chat.id, totaal_rooster) is False:
             message_handler(message.chat.id, "Deze persoon is niet bekend in het systeem.")
     except Exception as e:
         error_handler(e, message, command='totaalrooster')
+
+
 # Info commands
 
 @bot.message_handler(commands=['mijnspeltak'])
@@ -305,7 +320,7 @@ def myspeltak(message):
             message_handler(message.chat.id, output)
         except mariadb.Error:
             message_handler(message.chat.id, "Je bent nog niet geregistreerd, stuur /aanmelden om "
-                                              "je te registreren.")
+                                             "je te registreren.")
     except Exception as e:
         error_handler(e, message, command='mijnspeltak')
 
@@ -335,20 +350,24 @@ def speltak2(message):
 @bot.message_handler(commands=['feedback'])
 def feedback(message):
     message_handler(message.chat.id, "Bedankt dat je feedback wilt geven! Stuur een bericht naar "
-                                      "[David Straat](tg://user?id=2059520607)",
-                     parse_mode="Markdown")
+                                     "[David Straat](tg://user?id=2059520607)",
+                    parse_mode="Markdown")
 
 
 # Noodgeval functies
-@bot.message_handler(commands=['SOS','sos'])
+@bot.message_handler(commands=['SOS', 'sos'])
 def EHBOmsg(message):
     if register_check(message):
-        message_handler(message.chat.id, "Wat is de boodschap? Geef hierin door waar je bent en wat er is gebeurd.")
+        message_handler(message.chat.id, "Wat is de boodschap? Geef hierin door waar je bent en wat er is gebeurd, of "
+                                         "type 'stop' om te stoppen.")
         bot.register_next_step_handler(message, EHBOmsg2)
 
 
 def EHBOmsg2(message):
     try:
+        if message.text == "stop":
+            message_handler(message.chat.id, "Je hebt het bericht niet verstuurd.")
+            return
         logger(message, "EHBO", message.text)
         EHBOinput = message.text
         telegram_id = message.from_user.id
@@ -358,8 +377,7 @@ def EHBOmsg2(message):
                       f"{EHBOinput}"
         EHBO_id = Leader_Table().get_EHBO()
         EHBO_names = [Leader_Table().get_name(i) for i in EHBO_id]
-        EHBO_telegram = [Leiding(i).getTelegram() for i in EHBO_names]
-        mass_message(EHBOmessage, admin = True, EHBO  = True)
+        mass_message(EHBOmessage, target_admin=True, target_ehbo=True)
         EHBO_name_string = ", ".join(EHBO_names)
         message_handler(message.chat.id, f"De EHBO-ers zijn {EHBO_name_string} en hebben een bericht gekregen.")
     except Exception as e:
@@ -388,6 +406,7 @@ def EHBOers(message):
     except Exception as e:
         error_handler(e, message, command='EHBOers')
 
+
 @bot.message_handler(commands=['leiding'])
 def leiding(message):
     try:
@@ -397,9 +416,24 @@ def leiding(message):
         leaders = Leader_Table().execute(query)
         leader_list = [f"{leader[0]}\n" for leader in leaders]
         leader_list = "".join(leader_list)
-        message_handler(message,f"De leiding is:\n=========\n{leader_list}")
+        message_handler(message, f"De leiding is:\n=========\n{leader_list}")
     except Exception as e:
         error_handler(e, message, command='leiding')
+
+
+@bot.message_handler(commands=['groepen'])
+def groepen(message):
+    try:
+        if not register_check(message):
+            return
+        query = "SELECT DISTINCT Name FROM Troop ORDER BY Name"
+        leaders = Leader_Table().execute(query)
+        leader_list = [f"{leader[0]}\n" for leader in leaders]
+        leader_list = "".join(leader_list)
+        message_handler(message.chat.id, f"De groepen zijn:\n=========\n{leader_list}")
+    except Exception as e:
+        error_handler(e, message, command='groepen')
+
 
 # Admin commands
 
@@ -425,24 +459,35 @@ def admin2(message):
 def admin_help(message):
     if Telegram().get_admin(message.from_user.id):
         message_handler(message.chat.id, "De volgende commando's zijn beschikbaar voor admins:\n"
-                                          "//admin - Log in als admin\n"
-                                          "//help - Toon deze lijst\n"
-                                          "//announce - Stuur een bericht naar alle leden\n"
-                                          "//test - Test of je admin bent\n"
-                                          "//problems - Toon de problemen in de planning\n"
-                         )
+                                         "//admin - Log in als admin\n"
+                                         "//help - Toon deze lijst\n"
+                                         "//announce - Stuur een bericht naar alle leden\n"
+                                         "//test - Test of je admin bent\n"
+                                         "//problems - Toon de problemen in de planning\n"
+                                         "//backup - Maak een backup van de database. "
+                                         "SVP niet vaker dan 1 keer per dagdeel o.i.d. uitvoeren\n"
+                                         "//pdftotaalrooster - Exporteert het totaal rooster van "
+                                         "een leiding naar pdf\n"
+                                         "/error - Gooit een error. Voor debuggen\n"
+                                         "//error - Gooit een error die wordt gelogd. "
+                                         "SVP niet zomaar gebruiken, Telegram stuurt dan namelijk "
+                                         "een melding naar de beheerder."
+                        )
 
 
 @bot.message_handler(commands=['/announce'])
 def announce(message):
     if Telegram().get_admin(message.from_user.id):
-        message_handler(message.chat.id, "Wat is de boodschap?")
+        message_handler(message.chat.id, "Wat is de boodschap? Schrijf 'stop' om te stoppen.")
         bot.register_next_step_handler(message, announce2)
 
 
 def announce2(message):
     try:
         if Telegram().get_admin(message.from_user.id):
+            if message.text == "stop":
+                message_handler(message.chat.id, "De boodschap is niet verzonden.")
+                return
             message_handler(message.chat.id, "De boodschap is verzonden.")
             announcement = message.text
             user_id = message.from_user.id
@@ -464,27 +509,8 @@ def admin_test(message):
 @bot.message_handler(commands=['/problems'])
 def problems(message):
     if Telegram().get_admin(message.from_user.id):
-        problems = Problems().get_problems()
-        message_handler(message, problems)
-
-
-@bot.message_handler(commands=['/schedule'])
-def schedule(message):
-    if Telegram().get_admin(message.from_user.id):
-        message_handler(message.chat.id, "Van wie wil je het rooster inzien?")
-        bot.register_next_step_handler(message, schedule2)
-
-
-def schedule2(message):
-    try:
-        if Telegram().get_admin(message.from_user.id):
-            name = message.text
-            if Leader_Table().check_name(name):
-                message_handler(message.chat.id, Leader_Table().get_schedule(name))
-            else:
-                message_handler(message.chat.id, "Deze naam is niet gevonden.")
-    except Exception as e:
-        error_handler(e, message)
+        problem_list = Problems().get_problems()
+        message_handler(message, problem_list)
 
 
 @bot.message_handler(commands=['/backup'])
@@ -496,18 +522,21 @@ def backup(message):
                 FROM Job t;""")
             default_server.execute("INSERT INTO BU_Schedule (id, LeaderId, jobId, StartTimeBlockId, EndTimeBlockId, \n"
                                    "Required, timestamp)\n"
-                                   "SELECT t.id, t.LeaderId, t.jobId, t.StartTimeBlockId, t.EndTimeBlockId, t.Required, NOW()\n"
+                                   "SELECT t.id, t.LeaderId, t.jobId, t.StartTimeBlockId, t.EndTimeBlockId, t.Required,"
+                                   " NOW()\n"
                                    "FROM Schedule t;")
             logger(message, "Backup")
             message_handler(message.chat.id, "Backup gemaakt.")
         except Exception as e:
             error_handler(e, message)
 
+
 @bot.message_handler(commands=['/pdftotaalrooster'])
 def pdftotaalrooster(message):
     if Telegram().get_admin(message.from_user.id):
         message_handler(message.chat.id, 'Van wie wil je het totaalrooster exporteren naar een PDF?')
         bot.register_next_step_handler(message, pdftotaalrooster2)
+
 
 def pdftotaalrooster2(message):
     try:
@@ -521,33 +550,43 @@ def pdftotaalrooster2(message):
         error_handler(e, message)
 
 
-
 # Debug commands
 
 @bot.message_handler(commands=['error'])
 # This version of the error doesn't log the error and thus doesn't send a message to everyone with Admin
 def throw_error(message):
     message_handler(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
-                                      "Neem geen contact op met de ontwikkelaars.")
+                                     "Neem geen contact op met de ontwikkelaars.")
     string = ''
     try:
         string[1]
     except Exception as e:
         error_handler(e, message, do_not_log=True)
 
+
 @bot.message_handler(commands=['/error'])
 # This version of the error does log the error and thus sends a message to everyone with Admin
 def admin_error(message):
     if Telegram().get_admin(message.from_user.id):
         message_handler(message.chat.id, "Dit is een testbericht voor de error-handler. (Dit is geen echte error.)\n "
-                                          "Neem geen contact op met de ontwikkelaars.")
+                                         "Neem geen contact op met de ontwikkelaars.")
         string = ''
         try:
             string[1]
         except Exception as e:
             error_handler(e, message)
 
+
 # Easter eggs
+
+@bot.message_handler(commands=["easter_help"])
+def easter_help(message):
+    easter_help_output = (
+        "/haarlijn_jorik\n"
+        "/pingelen\n"
+    )
+    message_handler(message.chat.id, easter_help_output)
+
 
 @bot.message_handler(commands=["haarlijn_jorik"])
 def haarlijn(message):
@@ -557,13 +596,13 @@ def haarlijn(message):
 @bot.message_handler(commands=["pingelen"])
 def pingelen(message):
     message_handler(message.chat.id,
-                     "Welkom bij Commando Pingelen. Als je een commando krijgt, volg het commando. Zo niet,"
-                     "doe '...'")
+                    "Welkom bij Commando Pingelen. Als je een commando krijgt, volg het commando. Zo niet,"
+                    "doe '...'")
     pingelen2(message)
 
 
 def pingelen2(message):
-    pingelen = [
+    pinge_list = [
         "Commando pingelen",
         "Commando bol",
         "Commando plat",
@@ -573,7 +612,7 @@ def pingelen2(message):
         "Plat",
         "Hol"
     ]
-    commando = random.choice(pingelen)
+    commando = random.choice(pinge_list)
     message_handler(message.chat.id, commando)
     bot.register_next_step_handler(message, pingelen3, commando)
 
@@ -619,6 +658,7 @@ def schedule_pdf_generator(message, name):
     message_handler(message.chat.id, "Het totaalrooster is gegenereerd.")
     bot.send_document(message.chat.id, open('totaalrooster.pdf', 'rb'))
 
+
 def profile(naam, message):
     try:
         User = Leiding(naam)
@@ -646,32 +686,33 @@ def profile(naam, message):
         print(Output_list)
         output = "\n".join(Output_list)
         message_handler(message.chat.id, output,
-                         parse_mode="Markdown"
-                         )
+                        parse_mode="Markdown"
+                        )
     except mariadb.ProgrammingError:
         error_handler(mariadb.ProgrammingError, message)
+
 
 def total_schedule(naam):
     schedule_total = Table("VwBotTextScheduleTotal")
     user_schedule = schedule_total.query(f"SELECT Bottext FROM VwBotTextScheduleTotal WHERE Leader = '{naam}' "
                                          f"ORDER BY  Orderby")
-    output = "\n".join(i[0] for i in user_schedule)
-    return output
+    return "\n".join(i[0] for i in user_schedule)
 
-def mass_message(message, admin = False, EHBO = False, everyone = False):
-    id = []
-    if admin:
+
+def mass_message(message, target_admin=False, target_ehbo=False, target_everyone=False):
+    telegram_ids = []
+    if target_admin:
         with contextlib.suppress(Exception):
             admin_id = Leader_Table().get_admin()
-            id += admin_id
-    if EHBO:
+            telegram_ids += admin_id
+    if target_ehbo:
         with contextlib.suppress(Exception):
             EHBO_id = Leader_Table().get_EHBO()
-            id += EHBO_id
-    if everyone:
+            telegram_ids += EHBO_id
+    if target_everyone:
         with contextlib.suppress(Exception):
-            id += Telegram().query("SELECT TelegramID FROM Telegram")
-    names = [Leader_Table().get_name(i) for i in id]
+            telegram_ids += Telegram().query("SELECT TelegramID FROM Telegram")
+    names = [Leader_Table().get_name(i) for i in telegram_ids]
     telegram = [Leiding(i).getTelegram() for i in names]
     for i in telegram:
         if i is not None:
@@ -683,10 +724,10 @@ def mass_message(message, admin = False, EHBO = False, everyone = False):
 
 def error_handler(e, message, do_not_log=False, command=None):
     message_handler(message.chat.id,
-                     f"Er is iets fout gegaan, probeer het "
-                     f"opnieuw.\n\nAls het probleem zich blijft herhalen, "
-                     f"neem contact op met de beheerder.\n"
-                     f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
+                    f"Er is iets fout gegaan, probeer het "
+                    f"opnieuw.\n\nAls het probleem zich blijft herhalen, "
+                    f"neem contact op met de beheerder.\n"
+                    f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
     if not do_not_log:
         user_id = message.from_user.id
         logger(message, f"!!!ERROR {command}!!!", str(e))
@@ -696,14 +737,15 @@ def error_handler(e, message, do_not_log=False, command=None):
                         f"Input: {message.text}\n" \
                         f"Error: \n" \
                         f"```{str(e)}```"
-        mass_message(admin_message, admin=True)
+        mass_message(admin_message, target_admin=True)
         print(e)
 
-def message_handler(message_object, content, parse_mode = None):
+
+def message_handler(message_object, content, parse_mode=None):
     if int(message_object) == message_object:
-        id = message_object
+        telegram_id = message_object
     else:
-        id = message_object.chat.id
+        telegram_id = message_object.chat.id
     if content is None or content == "":
         return False
     if len(content) > 4096:
@@ -713,7 +755,8 @@ def message_handler(message_object, content, parse_mode = None):
     else:
         message_list = [content]
     for message in message_list:
-        bot.send_message(id, message, parse_mode=parse_mode)
+        bot.send_message(telegram_id, message, parse_mode=parse_mode)
+
 
 def register_check(message):
     try:
@@ -741,8 +784,6 @@ def logger(message=None, command=None, input_string=None):
     with open('log.txt', 'a') as f:
         f.write(f'{datestamp};{telegram_id};{command};{input_string}\n')
 
-
-import contextlib
 
 print('Running')
 try:
