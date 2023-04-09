@@ -42,7 +42,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0"
+                    "\nHuidige versie: Closed Beta 1.0.1"
                     )
 
 
@@ -650,7 +650,7 @@ def schedule_pdf_generator(message, name):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font('Arial', 'B', 16)
-    pdf.cell(40, 10, 'Totaalrooster')
+    pdf.cell(40, 10, f'Totaalrooster van {name}')
     pdf.ln(10)
     pdf.set_font('Arial', '', 12)
     pdf.multi_cell(0, 5, output)
