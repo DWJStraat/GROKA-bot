@@ -37,12 +37,13 @@ def start(message):
                     "contact met ze op te nemen."
                     "\n - stuur /SOS als je echt in nood bent. Dit stuurt "
                     "een bericht naar de EHBOers."
+                    "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0.3"
+                    "\nHuidige versie: Closed Beta 1.0.4"
                     )
 
 
@@ -521,12 +522,12 @@ def backup(message):
         try:
             default_server.execute("""INSERT INTO BU_Job (id, name, ActivityId, description, nLeaders, timestamp)
                 SELECT t.id, t.name, t.ActivityId, t.description, t.nLeaders, NOW()
-                FROM Job t;""")
+                FROM Job t;""", commit=True)
             default_server.execute("INSERT INTO BU_Schedule (id, LeaderId, jobId, StartTimeBlockId, EndTimeBlockId, \n"
                                    "Required, timestamp)\n"
                                    "SELECT t.id, t.LeaderId, t.jobId, t.StartTimeBlockId, t.EndTimeBlockId, t.Required,"
                                    " NOW()\n"
-                                   "FROM Schedule t;")
+                                   "FROM Schedule t;", commit=True)
             logger(message, "Backup")
             message_handler(message.chat.id, "Backup gemaakt.")
         except Exception as e:
