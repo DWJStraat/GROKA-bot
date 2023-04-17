@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-
+import time
 import mariadb
 
 config = json.load(open("config.json"))
@@ -23,13 +23,20 @@ class Server:
 
 
     def connect(self):
-        self.connection = mariadb.connect(
-            host=self.host,
-            user=self.user,
-            password=self.password,
-            database=self.database,
-            port=self.port
-        )
+        try:
+            self.connection = mariadb.connect(
+                host=self.host,
+                user=self.user,
+                password=self.password,
+                database=self.database,
+                port=self.port
+            )
+        except mariadb.OperationalError as e:
+            print(f"Error connecting to MariaDB Platform: {e}")
+            print('Attempting to reconnect in 5 seconds...')
+            time.sleep(5)
+        except mariadb.Error as e:
+            print(f"Error connecting to MariaDB Platform: {e}")
 
     def getCursor(self):
         self.cursor = self.connection.cursor()

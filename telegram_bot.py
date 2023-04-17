@@ -43,7 +43,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0.4"
+                    "\nHuidige versie: Closed Beta 1.0.5"
                     )
 
 
