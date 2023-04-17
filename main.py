@@ -39,9 +39,11 @@ class Server:
             print(f"Error connecting to MariaDB Platform: {e}")
 
     def getCursor(self):
-        if self.connection is None:
+        try:
+            self.cursor = self.connection.cursor()
+        except Exception:
             self.connect()
-        self.cursor = self.connection.cursor()
+            self.getCursor()
 
     def closeCursor(self):
         self.cursor.close()
