@@ -127,12 +127,12 @@ def enter_schedule_from_bundle(schedule_bundle, debug=False, silent=False):
     return error_log
 
 
-schedule = import_schedule(False)
+schedule = import_schedule(True)
 print('Schedule imported')
 schedule_json = schedule_to_json(schedule)
 print('Schedule converted to json')
 bundle = job_bundle(schedule_json)
-error_log = enter_schedule_from_bundle(bundle, debug=True, silent=True)
+error_log = enter_schedule_from_bundle(bundle, debug=False, silent=False)
 
 print('=' * 50)
 print('Done')
