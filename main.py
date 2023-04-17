@@ -60,7 +60,9 @@ class Server:
                 value = None
             self.cursor.close()
             self.close()
-        except mariadb.Error as e:
+        except Exception as e:
+            self.cursor.close()
+            self.close()
             print(f"Error: {e}\nQuery: {query}")
             raise e
         return value
