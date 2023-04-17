@@ -1,0 +1,10 @@
+{
+  "telegram_token" : "telegram_token",
+  "host":"host",
+  "port": 3306,
+  "user": "user",
+  "password": "password",
+  "database": "database",
+  "bot_password": "password",
+  "bot_password_admin": "admin_password"
+}
