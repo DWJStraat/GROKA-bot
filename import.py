@@ -46,7 +46,6 @@ def handle_job(job_name, activity_id):
         job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = {activity_id} LIMIT 1')
     while type(job_id) is not int:
         job_id = job_id[0]
-    print(type(job_id))
     return job_id
 
 
