@@ -123,6 +123,7 @@ def enter_schedule_from_bundle(schedule_bundle, debug=False, silent=False):
                     print(e)
                     error_log.append(query)
                     print(f'Error in query: {query}')
+        print(f'User {user} done')
     return error_log
 
 
