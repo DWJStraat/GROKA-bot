@@ -782,9 +782,10 @@ def error_handler(e, message, do_not_log=False, command=None):
                     f"De error is:\n--------\n```{str(e)}```\n--------", parse_mode='Markdown')
     if not do_not_log:
         user_id = message.from_user.id
+        user_name = message.from_user.first_name
         logger(message, f"!!!ERROR {command}!!!", str(e))
         admin_message = f"ERROR\n" \
-                        f"User: [{user_id}](tg://user?id={user_id})\n" \
+                        f"User: [{user_name}](tg://user?id={user_id})\n" \
                         f"Command: {command}\n" \
                         f"Input: {message.text}\n" \
                         f"Error: \n" \
