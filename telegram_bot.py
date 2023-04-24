@@ -43,7 +43,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0.5"
+                    "\nHuidige versie: Closed Beta 1.0.6"
                     )
 
 
@@ -66,6 +66,9 @@ def roosterhelp(message):
                     "op te vragen."
                     "\nStuur /totaalrooster om het totaalrooster van een andere"
                     "leiding op te vragen."
+                    "\n Stuur /teamrooster om het rooster van een team op te "
+                    "vragen."
+                    "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
@@ -305,6 +308,20 @@ def totaalrooster2(message):
     except Exception as e:
         error_handler(e, message, command='totaalrooster')
 
+@bot.message_handler(commands=['teamrooster'])
+def team_rooster(message):
+    if register_check(message):
+        message_handler(message.chat.id, "Van welk team wil je het rooster zien?")
+        bot.register_next_step_handler(message, team_rooster2)
+
+def team_rooster2 (message):
+    try:
+        team = message.text
+        team_rooster = team_schedule(team)
+        if message_handler(message.chat.id, team_rooster) is False:
+            message_handler(message.chat.id, "Dit team is niet bekend in het systeem.")
+    except Exception as e:
+        error_handler(e, message, command='teamrooster')
 
 # Info commands
 
@@ -675,6 +692,19 @@ def total_schedule(naam):
     user_schedule = schedule_total.query(f"SELECT Bottext FROM VwBotTextScheduleTotal WHERE Leader = '{naam}' "
                                          f"ORDER BY  Orderby, starttime")
     return "\n".join(i[0] for i in user_schedule)
+
+def team_schedule(team):
+    schedule = Table("VwBotTextScheduleTeamChiefLeader")
+    schedule = schedule.query(f"SELECT Bottext FROM VwBotTextScheduleTeamChiefLeader WHERE Team = '{team}' "
+                              f"ORDER BY  Orderby")
+    output = ''
+    for i in range(len(schedule)):
+        try:
+            output += schedule[i][0]
+            output += '\n'
+        except:
+            pass
+    return output
 
 def profile(naam, message):
     try:
