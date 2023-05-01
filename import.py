@@ -9,7 +9,7 @@ def import_schedule(dialog=True):
     if dialog:
         file = fd.askopenfilename()
     else:
-        file = r"C:\Users\dstra\Downloads\Planning Groka_voor csv.csv"
+        file = r"test.csv"
     with open(file, 'r', encoding='utf8') as f:
         schedule = pd.read_csv(f, sep=';')
     schedule = schedule.set_index('Column1')
@@ -31,7 +31,9 @@ def schedule_to_json(schedule):
                     entry = entry.split('$')
                     activity = entry[0]
                     job = entry[1]
-                    schedule_json[i][j] = {'timeblock': j, 'job': job, 'activity': activity}
+                    required = entry[2] if len(entry) == 3 else 0
+                    schedule_json[i][j] = {'timeblock': j, 'job': job, 'activity': activity, 'required': required}
+
     return schedule_json
 
 
@@ -69,6 +71,7 @@ def get_values(schedule_json, i, j):
 
 
 def job_bundle(schedule_json):
+    global required
     output = {}
     try:
         for user in schedule_json:
@@ -76,11 +79,13 @@ def job_bundle(schedule_json):
             for job in schedule_json[user]:
                 name = schedule_json[user][job]['job']
                 activity = schedule_json[user][job]['activity']
+                required = schedule_json[user][job]['required']
                 key = f'{name}${activity}'
                 if key not in output[user]:
                     output[user][key] = {
                         'activity': activity,
                         'timeblock': [],
+                        'required': required
                     }
                 output[user][key]['timeblock'].append(schedule_json[user][job]['timeblock'])
             for job in output[user]:
@@ -111,8 +116,9 @@ def enter_schedule_from_bundle(schedule_bundle, debug=False, silent=False):
             job_id = handle_job(job_name, activity_id)
             start_time = schedule_bundle[user][job]['start_time']
             end_time = schedule_bundle[user][job]['end_time']
+            required = schedule_bundle[user][job]['required']
             query = f'INSERT INTO Schedule (LeaderId, JobId, StartTimeBlockId, EndTimeBlockId) ' \
-                    f'VALUES ({leader_id}, {job_id}, {start_time}, {end_time})'
+                    f'VALUES ({leader_id}, {job_id}, {start_time}, {end_time}, {required})'
             if debug and not silent:
                 print(query)
             else:
