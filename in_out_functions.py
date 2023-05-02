@@ -4,6 +4,57 @@ import json
 import tkinter.filedialog as fd
 import time
 
+
+class Schedule_Class:
+    def __init__(self, mode='', file_path='test.csv', sep=';'):
+        if mode == "I":
+            self.i = True
+        elif mode == "O":
+            self.i = False
+        else:
+            print("Mode not recognized, please use I for import or O for export")
+            return
+        self.sep = sep
+        self.file_path = file_path
+        self.get_schedule()
+
+    def get_schedule(self, ):
+        self.schedule = self.import_schedule() if self.i else self.load_schedule()
+
+    def import_schedule(self, ):
+        if self.file_path == '':
+            file_path = fd.askopenfilename()
+
+        with open(self.file_path, 'r', encoding='utf8') as f:
+            schedule = pd.read_csv(f, sep=self.sep)
+            schedule = schedule.set_index('Column1')
+        return schedule
+
+    def load_schedule(self):
+        pass
+
+    def to_json(self):
+        if type(self.schedule) != pd.DataFrame:
+            return
+        schedule_json = '{}'
+        schedule_json = json.loads(schedule_json)
+        timeblocks = [i[0] for i in self.schedule.iterrows()]
+        for i in self.schedule:
+            if i not in ['Unnamed: 0', 'start_time', 'end_time']:
+                schedule_dict = self.schedule[i].to_dict()
+                schedule_json[i] = {}
+                for j in timeblocks:
+                    entry = schedule_dict[j]
+                    if '$' in str(entry):
+                        entry = entry.split('$')
+                        activity = entry[0]
+                        job = entry[1]
+                        required = entry[2] if len(entry) == 3 else 0
+                        schedule_json[i][j] = {'timeblock': j, 'job': job, 'activity': activity,
+                                               'required': required}
+        self.json = schedule_json
+
+
 def load_schedule():
     """
     This function loads the schedule from the database
@@ -30,6 +81,7 @@ def load_schedule():
         }
     return schedule_json
 
+
 def bundle_by_leader(schedule):
     schedule_dict = json.loads('{}')
     for entry in schedule:
@@ -41,25 +93,43 @@ def bundle_by_leader(schedule):
                                            f'{schedule[entry]["job"]}${schedule[entry]["required"]}'
     return schedule_dict
 
+
 def bundle_by_timeblock(schedule):
     schedule_dict = json.loads('{}')
+    timeblocks = Table('TimeBlock').query('SELECT id, NameTimeStart, NameTimeEnd FROM TimeBlock')
+    timeblock = json.loads('{}')
+    for i in timeblocks:
+        timeblock[i[0]] = {
+            'start_time': i[1],
+            'end_time': i[2]
+        }
     for entry in schedule:
         entry = schedule[entry]
         for i in entry['timeblock']:
             if i not in schedule_dict:
-                schedule_dict[i] = {}
+                schedule_dict[i] = {
+                    'start_time': timeblock[i]['start_time'],
+                    'end_time': timeblock[i]['end_time']
+                }
+
             schedule_dict[i][entry['leader']] = f'{entry["activity"]}${entry["job"]}${entry["required"]}'
     return schedule_dict
 
-def bundle_to_csv(bundle, file_name):
+
+def panda_bundle(bundle):
     df = pd.DataFrame.from_dict(bundle, orient='index')
+    df.index.name = 'Column1'
     df.sort_index(inplace=True)
-    df.to_csv(f'{file_name}.csv')
+    return df
+
+
+def bundle_to_csv(bundle, file_name, sep=';'):
+    panda_bundle(bundle).to_csv(f'{file_name}.csv', sep=sep)
+
 
 def bundle_to_excel(bundle, file_name):
-    df = pd.DataFrame.from_dict(bundle, orient='index')
-    df.sort_index(inplace=True)
-    df.to_excel(f'{file_name}.xlsx')
+    panda_bundle(bundle).to_excel(f'{file_name}.xlsx')
+
 
 def export(file_name, excel=False, csv=False):
     sched_dict = load_schedule()
@@ -76,11 +146,11 @@ def export(file_name, excel=False, csv=False):
     print('done')
 
 
-def import_schedule(dialog=True):
+def import_schedule(dialog=True, sep=';'):
     file = fd.askopenfilename() if dialog else r"test.csv"
     with open(file, 'r', encoding='utf8') as f:
-        schedule = pd.read_csv(f, sep=';')
-    schedule = schedule.set_index('Column1')
+        schedule = pd.read_csv(f, sep=sep)
+        schedule = schedule.set_index('Column1')
     return schedule
 
 
@@ -107,14 +177,14 @@ def schedule_to_json(schedule):
 
 def handle_job(job_name, activity_id):
     job = Table('Job')
-    job_id = job.query(f'SELECT id FROM Job WHERE name = {job_name} AND ActivityId = {activity_id} LIMIT 1')
+    job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = "{activity_id}" LIMIT 1')
     if len(job_id) < 1:
         print(f'Job {job_name} not found in database')
         job.execute(f'INSERT INTO Job (name, ActivityId, description) VALUES ({job_name}, {activity_id}, '')',
                     commit=True)
         time.sleep(0.1)
         print(f'Job {job_name} added to database')
-        job_id = job.query(f'SELECT id FROM Job WHERE name = {job_name} AND ActivityId = {activity_id} LIMIT 1')
+        job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = "{activity_id}" LIMIT 1')
     while type(job_id) is not int:
         job_id = job_id[0]
     return job_id
@@ -123,15 +193,15 @@ def handle_job(job_name, activity_id):
 def handle_time(schedule_json, i, j):
     start = schedule_json[i][j]['start_time']
     end = schedule_json[i][j]['end_time']
-    start_timeblock = Tijdblok().query(f'SELECT id FROM TimeBlock WHERE NameTimeStart = {start} LIMIT 1')[0][0]
-    end_timeblock = Tijdblok().query(f'SELECT id FROM TimeBlock WHERE NameTimeEnd = {end} LIMIT 1')[0][0]
+    start_timeblock = Tijdblok().query(f'SELECT id FROM TimeBlock WHERE NameTimeStart = "{start}" LIMIT 1')[0][0]
+    end_timeblock = Tijdblok().query(f'SELECT id FROM TimeBlock WHERE NameTimeEnd = "{end}" LIMIT 1')[0][0]
     return start_timeblock, end_timeblock
 
 
 def get_values(schedule_json, i, j):
     activity = Table('Activity')
     activity_name = schedule_json[i][j]['activity']
-    activity_id = activity.query(f'SELECT id FROM Activity WHERE name = {activity_name} LIMIT 1')[0][0]
+    activity_id = activity.query(f'SELECT id FROM Activity WHERE name = "{activity_name}" LIMIT 1')[0][0]
     timeblock = 1
     leader_id = Leader_Table().get_id(i)
     job_name = schedule_json[i][j]['job']
@@ -175,7 +245,7 @@ def enter_schedule_from_bundle(schedule_bundle, debug=False, silent=False):
         for job in schedule_bundle[user]:
             activity = schedule_bundle[user][job]['activity']
             try:
-                activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = {activity} LIMIT 1')[0][
+                activity_id = Table('Activity').query(f'SELECT id FROM Activity WHERE name = "{activity}" LIMIT 1')[0][
                     0]
             except IndexError:
                 print(f'Activity {activity} not found in database')
@@ -201,7 +271,8 @@ def enter_schedule_from_bundle(schedule_bundle, debug=False, silent=False):
         print(f'User {user} done')
     return error_log
 
-def stupid_import(debug = False, silent = False, dialog = True):
+
+def stupid_import(debug=False, silent=False, dialog=True):
     schedule = import_schedule(dialog)
     print('Schedule imported')
     schedule_json = schedule_to_json(schedule)
@@ -211,3 +282,51 @@ def stupid_import(debug = False, silent = False, dialog = True):
     print('=' * 50)
     print('Done')
     return error_log
+
+
+def panda_to_dict(schedule):
+    schedule_dict = schedule.to_dict()
+    schedule_json = {}
+    for i in schedule_dict:
+        if i not in ['Unnamed: 0', 'start_time', 'end_time']:
+            schedule_json[i] = {}
+            for j in schedule_dict[i]:
+                entry = schedule_dict[i][j]
+                if '$' in str(entry):
+                    entry = entry.split('$')
+                    activity = entry[0]
+                    job = entry[1]
+                    required = entry[2] if len(entry) == 3 else 0
+                    schedule_json[i][j] = {'timeblock': j, 'job': job, 'activity': activity, 'required': required}
+    return schedule_json
+
+def smart_convert(schedule_json):
+    output = {}
+    for user in schedule_json:
+        output[user] = {}
+        for timeblock in schedule_json[user]:
+            job = schedule_json[user][timeblock]['job']
+            activity = schedule_json[user][timeblock]['activity']
+            required = schedule_json[user][timeblock]['required']
+            key = f'{activity}${job}${required}'
+            output[user][timeblock] = key
+    return output
+
+
+def smart_import(debug=False, silent=False, dialog=True):
+    new_schedule = import_schedule(dialog)
+    old_schedule = load_schedule()
+    old_schedule = bundle_by_leader(old_schedule)
+    new_schedule = panda_to_dict(new_schedule)
+    new_schedule = smart_convert(new_schedule)
+
+
+
+
+
+
+if __name__ == '__main__':
+    a, b = smart_import(dialog=False)
+    # a = Schedule_Class('I')
+    # b = Schedule_Class('O')
+    # a.to_json()
