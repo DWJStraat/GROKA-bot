@@ -180,7 +180,7 @@ def handle_job(job_name, activity_id):
     job_id = job.query(f'SELECT id FROM Job WHERE name = "{job_name}" AND ActivityId = "{activity_id}" LIMIT 1')
     if len(job_id) < 1:
         print(f'Job {job_name} not found in database')
-        job.execute(f'INSERT INTO Job (name, ActivityId, description) VALUES ({job_name}, {activity_id}, '')',
+        job.execute(f'INSERT INTO Job (name, ActivityId, description) VALUES ("{job_name}", {activity_id}, " ")',
                     commit=True)
         time.sleep(0.1)
         print(f'Job {job_name} added to database')
