@@ -6,6 +6,7 @@ import telebot
 from fpdf import FPDF
 
 from Tables import *
+import functions as func
 
 config = json.load(open("config.json"))
 
@@ -43,7 +44,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Closed Beta 1.0.6"
+                    "\nHuidige versie: Release 1.0.7"
                     )
 
 
@@ -66,7 +67,7 @@ def roosterhelp(message):
                     "op te vragen."
                     "\nStuur /totaalrooster om het totaalrooster van een andere"
                     "leiding op te vragen."
-                    "\n Stuur /teamrooster om het rooster van een team op te "
+                    "\n Stuur /teamrooster om het rooster van een comissie op te "
                     "vragen."
                     "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
@@ -95,14 +96,20 @@ def infohelp(message):
 
 @bot.message_handler(commands=['aanmelden'])
 def password(message):
-    message_handler(message.chat.id, "Voer het wachtwoord in.")
-    bot.register_next_step_handler(message, password2)
+    arg = func.arg_handler(message.text)
+    if arg is not []:
+        if func.register(arg):
+            register(message)
+        else:
+            message_handler(message.chat.id, "Het wachtwoord is onjuist. Voer het commando opnieuw in of vraag hulp"
+                                             "aan het planning team.")
+    else:
+        message_handler(message.chat.id, "Voer het wachtwoord in.")
+        bot.register_next_step_handler(message, password2)
 
 
 def password2(message):
-    enteredpassword = str(message.text)
-    correctpassword = config['bot_password']
-    if enteredpassword == correctpassword:
+    if func.register(str(message.text)):
         register(message)
     else:
         message_handler(message.chat.id, "Het wachtwoord is onjuist. Voer het commando opnieuw in of vraag hulp"
@@ -153,22 +160,19 @@ def about_me(message):
 
 @bot.message_handler(commands=['over'])
 def about(message):
+    arg = func.arg_handler(message.text)
     if register_check(message):
-        message_handler(message.chat.id, 'Over wie wil je informatie?')
-        bot.register_next_step_handler(message, about2)
+        if arg is not []:
+            print(arg)
+            func_about(arg, message)
+        else:
+            message_handler(message.chat.id, 'Over wie wil je informatie?')
+            bot.register_next_step_handler(message, about2)
 
 
 def about2(message):
-    try:
-        naam = message.text
-        logger(message, 'over', naam)
-        try:
-            profile(naam, message)
-        except IndexError:
-            message_handler(message.chat.id, "Deze persoon is niet gevonden in de "
-                                             "database, probeer het opnieuw.")
-    except Exception as e:
-        error_handler(e, message, command='over')
+    naam = str(message.text)
+    func_about(naam, message)
 
 
 @bot.message_handler(commands=['mijnnu'])
@@ -308,7 +312,7 @@ def totaalrooster2(message):
     except Exception as e:
         error_handler(e, message, command='totaalrooster')
 
-@bot.message_handler(commands=['teamrooster'])
+@bot.message_handler(commands=['teamrooster', 'commissierooster'])
 def team_rooster(message):
     if register_check(message):
         message_handler(message.chat.id, "Van welk team wil je het rooster zien?")
@@ -322,6 +326,7 @@ def team_rooster2 (message):
             message_handler(message.chat.id, "Dit team is niet bekend in het systeem.")
     except Exception as e:
         error_handler(e, message, command='teamrooster')
+
 
 # Info commands
 
@@ -837,6 +842,16 @@ def logger(message=None, command=None, input_string=None):
     with open('log.txt', 'a') as f:
         f.write(f'{datestamp};{telegram_id};{command};{input_string}\n')
 
+def func_about(naam, message):
+    try:
+        logger(message, 'over', naam)
+        try:
+            profile(naam, message)
+        except IndexError:
+            message_handler(message.chat.id, "Deze persoon is niet gevonden in de "
+                                             "database, probeer het opnieuw.")
+    except Exception as e:
+        error_handler(e, message, command='over')
 
 print('Running')
 try:
