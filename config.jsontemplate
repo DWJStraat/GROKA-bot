@@ -6,5 +6,6 @@
   "password": "password",
   "database": "database",
   "bot_password": "password",
-  "bot_password_admin": "admin_password"
+  "bot_password_admin": "admin_password",
+  "map_path": "map_path"
 }

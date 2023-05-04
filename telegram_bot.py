@@ -44,7 +44,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Release 1.0.7"
+                    "\nHuidige versie: Release 1.0.8"
                     )
 
 
@@ -87,6 +87,8 @@ def infohelp(message):
                     "\nStuur /speltak om een andere spelak te bekijken. "
                     "\nStuur /leiding om alle ingeschreven leiding te zien."
                     "\nStuur /groepen om alle ingeschreven groepen te zien."
+                    "\nStuur /kaart om de kaart te zien."
+                    "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
@@ -459,6 +461,15 @@ def groepen(message):
     except Exception as e:
         error_handler(e, message, command='groepen')
 
+@bot.message_handler(commands=['kaart', 'plattegrond', 'map'])
+def kaart(message):
+    try:
+        if not register_check(message):
+            return
+        map_path = config['map_path']
+        bot.send_photo(message.chat.id, open(map_path, 'rb'))
+    except Exception as e:
+        error_handler(e, message, command='kaart')
 
 # Admin commands
 
