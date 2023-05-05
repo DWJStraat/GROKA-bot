@@ -120,16 +120,18 @@ def infohelp(message):
 
 @bot.message_handler(commands=['aanmelden'])
 def password(message):
-        message_handler(message.chat.id, "Voer het wachtwoord in.")
-        bot.register_next_step_handler(message, password2)
+    message_handler(message.chat.id, "Voer het wachtwoord in.")
+    bot.register_next_step_handler(message, password2)
 
 
 def password2(message):
-    if message.text == config['bot_password']:
+    entered_password = str(message.text)
+    password = config['bot_password']
+    if entered_password == password:
         register(message)
     else:
-        message_handler(message.chat.id, "Wachtwoord incorrect, probeer het "
-                                         "opnieuw.")
+        message_handler(message.chat.id, "Wachtwoord incorrect.")
+        password(message)
 
 def register(message):
     message_handler(message.chat.id,
