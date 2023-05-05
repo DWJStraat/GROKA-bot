@@ -125,12 +125,11 @@ def password(message):
 
 
 def password2(message):
-    if func.register(str(message.text)):
+    if message.text == config['bot_password']:
         register(message)
     else:
-        message_handler(message.chat.id, "Het wachtwoord is onjuist. Voer het commando opnieuw in of vraag hulp"
-                                         "aan het planning team.")
-
+        message_handler(message.chat.id, "Wachtwoord incorrect, probeer het "
+                                         "opnieuw.")
 
 def register(message):
     message_handler(message.chat.id,
