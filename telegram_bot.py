@@ -131,7 +131,6 @@ def password2(message):
         register(message)
     else:
         message_handler(message.chat.id, "Wachtwoord incorrect.")
-        password(message)
 
 def register(message):
     message_handler(message.chat.id,
