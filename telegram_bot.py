@@ -44,7 +44,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Release 1.0.8"
+                    "\nHuidige versie: Stable Release 1.0.9"
                     )
 
 
@@ -70,11 +70,33 @@ def roosterhelp(message):
                     "\n Stuur /teamrooster om het rooster van een comissie op te "
                     "vragen."
                     "\n"
+                    "\nStuur /speltakroosterhelp om hulp te krijgen met het "
+                    "bekijken van speltakroosters."
+                    "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     )
+
+@bot.message_handler(commands=['speltakroosterhelp'])
+def speltakroosterhelp(message):
+    bot.send_message(
+        message.chat.id,
+        "Stuur /mijnspeltakrooster om een verkort rooster van je speltak te "
+        "bekijken."
+        "\nStuur /speltakrooster om een verkort rooster van een andere speltak te "
+        "bekijken."
+        "\nStuur /mijnvolledigspeltakrooster om een volledig rooster van je speltak "
+        "te bekijken."
+        "\nStuur /volledigspeltakrooster om een volledig rooster van een andere "
+        "speltak te bekijken."
+        "\n"
+        "\nDeze bot is geschreven door David Straat (Mang van de "
+        "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
+        "opmerkingen kan je contact met mij opnemen d.m.v. "
+        "/feedback."
+    )
 
 
 @bot.message_handler(commands=['infohelp'])
@@ -162,14 +184,10 @@ def about_me(message):
 
 @bot.message_handler(commands=['over'])
 def about(message):
-    arg = func.arg_handler(message.text)
     if register_check(message):
-        if arg is not []:
-            print(arg)
-            func_about(arg, message)
-        else:
-            message_handler(message.chat.id, 'Over wie wil je informatie?')
-            bot.register_next_step_handler(message, about2)
+        message_handler(message.chat.id, 'Over wie wil je informatie?')
+        bot.register_next_step_handler(message, about2)
+
 
 
 def about2(message):
@@ -329,6 +347,59 @@ def team_rooster2 (message):
     except Exception as e:
         error_handler(e, message, command='teamrooster')
 
+@bot.message_handler(commands=['speltakroostervolledig', "volledigspeltakrooster"])
+def speltak_rooster(message):
+    if register_check(message):
+        message_handler(message.chat.id, "Van welke speltak wil je het rooster zien?")
+        bot.register_next_step_handler(message, speltak_rooster2)
+
+def speltak_rooster2 (message, short=False):
+    try:
+        speltak = message.text
+        speltak_rooster = speltak_schedule(speltak)
+        if message_handler(message.chat.id, speltak_rooster) is False:
+            message_handler(message.chat.id, "Deze speltak is niet bekend in het systeem.")
+    except Exception as e:
+        if short:
+            command = 'kortspeltakrooster'
+        else:
+            command = 'speltakrooster'
+        error_handler(e, message, command=command)
+
+@bot.message_handler(commands=['mijnspeltakroostervolledig', 'mijnvolledigspeltakrooster','volledigmijnspeltakrooster'])
+def myspeltak_rooster(message):
+    try:
+        speltak = Leiding(Telegram().get_name(message.from_user.id)).getTroop()
+        speltak_rooster = speltak_schedule(speltak)
+        message_handler(message.chat.id, speltak_rooster)
+    except Exception as e:
+        error_handler(e, message, command='mijnspeltakrooster')
+
+
+
+@bot.message_handler(commands=['mijnspeltakrooster'])
+def kort_myspeltak_rooster(message):
+    try:
+        speltak = Leiding(Telegram().get_name(message.from_user.id)).getTroop()
+        speltak_rooster = speltak_schedule(speltak, short=True)
+        message_handler(message.chat.id, speltak_rooster)
+    except Exception as e:
+        error_handler(e, message, command='mijnspeltakrooster')
+
+@bot.message_handler(commands=['speltakrooster'])
+def kort_speltak_rooster(message):
+    if register_check(message):
+        message_handler(message.chat.id, "Van welke speltak wil je het rooster zien?")
+        bot.register_next_step_handler(message, kort_speltak_rooster2)
+
+def kort_speltak_rooster2(message):
+    try:
+        speltak = message.text
+        speltak_rooster = speltak_schedule(speltak, short=True)
+        if message_handler(message.chat.id, speltak_rooster) is False:
+            message_handler(message.chat.id, "Deze speltak is niet bekend in het systeem.")
+    except Exception as e:
+        error_handler(e, message, command='kortspeltakrooster')
 
 # Info commands
 
@@ -713,6 +784,22 @@ def team_schedule(team):
     schedule = Table("VwBotTextScheduleTeamChiefLeader")
     schedule = schedule.query(f"SELECT Bottext FROM VwBotTextScheduleTeamChiefLeader WHERE Team = '{team}' "
                               f"ORDER BY  Orderby")
+    output = ''
+    for i in range(len(schedule)):
+        try:
+            output += schedule[i][0]
+            output += '\n'
+        except:
+            pass
+    return output
+
+def speltak_schedule(speltak, short=False):
+    database = "VwBotTextTroopSchedule"
+    if short:
+        database +="Short"
+    schedule = Table(database)
+    query = f"SELECT Bottext FROM {database} WHERE name = '{speltak}' order by Orderby"
+    schedule = schedule.query(query)
     output = ''
     for i in range(len(schedule)):
         try:
