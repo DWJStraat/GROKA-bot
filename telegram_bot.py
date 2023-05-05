@@ -120,14 +120,6 @@ def infohelp(message):
 
 @bot.message_handler(commands=['aanmelden'])
 def password(message):
-    arg = func.arg_handler(message.text)
-    if arg is not []:
-        if func.register(arg):
-            register(message)
-        else:
-            message_handler(message.chat.id, "Het wachtwoord is onjuist. Voer het commando opnieuw in of vraag hulp"
-                                             "aan het planning team.")
-    else:
         message_handler(message.chat.id, "Voer het wachtwoord in.")
         bot.register_next_step_handler(message, password2)
 
