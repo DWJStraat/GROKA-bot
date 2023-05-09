@@ -44,7 +44,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Stable Release 1.0.9"
+                    "\nHuidige versie: Stable Release 1.1.0"
                     )
 
 
@@ -219,7 +219,8 @@ def now2(message):
 @bot.message_handler(commands=['mijnstraks'])
 def mysoon(message):
     try:
-        if register_check(message):
+        registered = register_check(message)
+        if registered:
             telegram_id = message.from_user.id
             naam = Telegram().get_name(telegram_id)
             bot.message_handler(message.chat.id, Schedules_Next().get_schedule(naam))

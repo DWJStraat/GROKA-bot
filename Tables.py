@@ -9,7 +9,9 @@ class Telegram(Table):
         super().__init__("Telegram")
 
     def get_name(self, id):
-        user_id = self.query(f'SELECT LeaderId FROM {self.name} WHERE telegramid = {id}')[0][0]
+        user_id = self.query(f'SELECT LeaderId FROM {self.name} WHERE telegramid = {id}')
+        while type(user_id) == list:
+            user_id = user_id[0]
         return Leader_Table().get_name(user_id)
 
     def get_id(self, name):
