@@ -909,7 +909,6 @@ def message_handler(message_object, content, parse_mode=None):
 
 def register_check(message):
     try:
-        print('a')
         if Telegram().get_name(message.from_user.id) is None:
             message_handler(message.chat.id, "Je bent nog niet geregistreerd. Gebruik /aanmelden.")
             return False
