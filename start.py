@@ -6,4 +6,5 @@ while True:
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
     with open("log.txt", "a") as f:
         f.write(f"/!\{timestamp} | Bot crashed, restarting.../!\\\n")
-    print("Bot crashed, restarting...")
+    print("Bot crashed, restarting in 10 seconds. Press ctrl+c to stop.")
+
