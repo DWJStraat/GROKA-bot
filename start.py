@@ -7,4 +7,5 @@ while True:
     with open("log.txt", "a") as f:
         f.write(f"/!\{timestamp} | Bot crashed, restarting.../!\\\n")
     print("Bot crashed, restarting in 10 seconds. Press ctrl+c to stop.")
+    time.sleep(10)
 
