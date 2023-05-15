@@ -712,7 +712,7 @@ def pingelen2(message):
         "Commando pingelen",
         "Commando bol",
         "Commando plat",
-        "Commando hol"
+        "Commando hol",
         "Pingelen",
         "Bol",
         "Plat",
@@ -725,16 +725,16 @@ def pingelen2(message):
 
 def pingelen3(message, commando):
     if commando == "Commando pingelen":
-        output = "Pingelen"
+        output = "pingelen"
     elif commando == "Commando bol":
-        output = "Bol"
+        output = "bol"
     elif commando == "Commando plat":
-        output = "Plat"
+        output = "plat"
     elif commando == "Commando hol":
-        output = "Hol"
+        output = "hol"
     else:
         output = "..."
-    if message.text == output:
+    if message.text.lower() == output:
         message_handler(message.chat.id, "Goed gedaan!")
         pingelen(message)
     else:
