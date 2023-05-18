@@ -9,10 +9,6 @@ from Tables import *
 import functions as func
 
 #TODO
-# Dit kwartier
-# Volgend kwartier
-# Dit uur
-# Volgend uur
 # Mijn Straks fixen
 # Nieuwe help pagina
 
@@ -207,7 +203,8 @@ def song(message):
                'Couplet 1:\n' \
                'Wij staan met zijn allen\n' \
                'In Walrick paraat\n' \
-               'Ruimtescouts worden we zijn heel kordaat\n' \
+               'Ruimtescouts worden \n' \
+               'we zijn heel kordaat\n' \
                '\n' \
                'Couplet 2:\n' \
                'We gaan onderzoeken\n' \
@@ -224,7 +221,8 @@ def mynow(message):
         if register_check(message):
             telegram_id = message.from_user.id
             naam = Telegram().get_name(telegram_id)
-            message_handler(message.chat.id, Schedules_now().get_schedule(naam))
+            output = Schedules_now().get_schedule(naam)
+            message_handler(message.chat.id, output)
     except Exception as e:
         error_handler(e, message, command='mijnnu')
 
