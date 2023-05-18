@@ -52,7 +52,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Stable Release 1.1.0"
+                    "\nHuidige versie: Stable Release 1.1.1"
                     )
 
 
@@ -211,27 +211,27 @@ def mynow(message):
 @bot.message_handler(commands=['ditkwartier'])
 def dit_kwartier(message):
     if register_check(message):
-        output = this_or_next_getter(True, True, False)
+        output = this_or_next_getter(True, True, True)
         message_handler(message.chat.id, output)
 
 @bot.message_handler(commands=['volgendkwartier'])
 def dit_kwartier(message):
     if register_check(message):
-        output = this_or_next_getter(False, True, False)
+        output = this_or_next_getter(False, True, True)
         message_handler(message.chat.id, output)
 
 
 @bot.message_handler(commands=['dituur'])
 def dit_kwartier(message):
     if register_check(message):
-        output = this_or_next_getter(True, False, False)
+        output = this_or_next_getter(True, False, True)
         message_handler(message.chat.id, output)
 
 
 @bot.message_handler(commands=['volgenduur'])
 def dit_kwartier(message):
     if register_check(message):
-        output = this_or_next_getter(False, False, False)
+        output = this_or_next_getter(False, False, True)
         message_handler(message.chat.id, output)
 
 
@@ -1002,7 +1002,7 @@ def this_or_next_getter(this = False, quarter = True, short=False):
     output = ''
     for i in output_list:
         if output != '':
-            output += '\n---------'
+            output += '\n---------\n'
         output += i[0]
     return output
 
