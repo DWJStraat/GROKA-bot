@@ -52,7 +52,7 @@ def start(message):
                     "opmerkingen kan je contact met mij opnemen d.m.v. "
                     "/feedback."
                     "\n"
-                    "\nHuidige versie: Stable Release 1.1.1"
+                    "\nHuidige versie: Stable Release 1.1.2"
                     )
 
 
@@ -118,6 +118,7 @@ def infohelp(message):
                     "\nStuur /leiding om alle ingeschreven leiding te zien."
                     "\nStuur /groepen om alle ingeschreven groepen te zien."
                     "\nStuur /kaart om de kaart te zien."
+                    "\nStuur /zwerverlied om de lyrics van het zwerverlied te krijgen."
                     "\n"
                     "\nDeze bot is geschreven door David Straat (Mang van de "
                     "Gidoerlog) voor het groepskamp van 2023. Voor vragen of "
@@ -194,6 +195,28 @@ def about2(message):
     naam = str(message.text)
     func_about(naam, message)
 
+@bot.message_handler(commands=['zwerverlied','kamplied'])
+def song(message):
+    try:
+        song = 'Refrein:\n' \
+               'En de zon gaat schijnen\n'\
+               'altijd zwerver geweest\n' \
+               'Nu op kamp met zijn allen\n' \
+               'Het is me een feest\n' \
+               '\n' \
+               'Couplet 1:\n' \
+               'Wij staan met zijn allen\n' \
+               'In Walrick paraat\n' \
+               'Ruimtescouts worden we zijn heel kordaat\n' \
+               '\n' \
+               'Couplet 2:\n' \
+               'We gaan onderzoeken\n' \
+               'Een nieuw fenomeen\n' \
+               'Zo\'n grote machine\n'\
+               'Er is er maar één'
+        message_handler(message.chat.id, song)
+    except Exception as e:
+        error_handler(e, message, command='song')
 
 @bot.message_handler(commands=['mijnnu'])
 def mynow(message):
@@ -210,38 +233,46 @@ def mynow(message):
 
 @bot.message_handler(commands=['ditkwartier'])
 def dit_kwartier(message):
-    if register_check(message):
-        output = this_or_next_getter(True, True, True)
-        message_handler(message.chat.id, output)
+    try:
+        if register_check(message):
+            output = this_or_next_getter(True, True, True)
+            message_handler(message.chat.id, output)
+    except Exception as e:
+        error_handler(e, message, command='dit_kwartier')
 
 @bot.message_handler(commands=['volgendkwartier'])
-def dit_kwartier(message):
-    if register_check(message):
-        output = this_or_next_getter(False, True, True)
-        message_handler(message.chat.id, output)
-
+def volgend_kwartier(message):
+    try:
+        if register_check(message):
+            output = this_or_next_getter(False, True, True)
+            message_handler(message.chat.id, output)
+    except:
+        error_handler(e, message, command='dit_kwartier')
 
 @bot.message_handler(commands=['dituur'])
-def dit_kwartier(message):
-    if register_check(message):
-        output = this_or_next_getter(True, False, True)
-        message_handler(message.chat.id, output)
-
+def dit_uur(message):
+    try:
+        if register_check(message):
+            output = this_or_next_getter(True, False, True)
+            message_handler(message.chat.id, output)
+    except Exception as e:
+        error_handler(e, message, command='dit_uur')
 
 @bot.message_handler(commands=['volgenduur'])
-def dit_kwartier(message):
-    if register_check(message):
-        output = this_or_next_getter(False, False, True)
-        message_handler(message.chat.id, output)
-
+def volgend_uur(message):
+    try:        
+        if register_check(message):
+            output = this_or_next_getter(False, False, True)
+            message_handler(message.chat.id, output)
+    except Exception as e:
+        error_handler(e, message, command='volgend_uur')
 
 
 @bot.message_handler(commands=['nu'])
-def now(message):
-    if register_check(message):
-        message_handler(message.chat.id, "Over wie wil je het nu rooster zien?")
-        bot.register_next_step_handler(message, now2)
-
+def now(message):       
+        if register_check(message):
+            message_handler(message.chat.id, "Over wie wil je het nu rooster zien?")
+            bot.register_next_step_handler(message, now2)
 
 def now2(message):
     try:
