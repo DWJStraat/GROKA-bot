@@ -8,6 +8,14 @@ from fpdf import FPDF
 from Tables import *
 import functions as func
 
+#TODO
+# Dit kwartier
+# Volgend kwartier
+# Dit uur
+# Volgend uur
+# Mijn Straks fixen
+# Nieuwe help pagina
+
 config = json.load(open("config.json"))
 
 bot = telebot.TeleBot(config['telegram_token'])
@@ -199,6 +207,34 @@ def mynow(message):
 
 
 # Rooster commands
+
+@bot.message_handler(commands=['ditkwartier'])
+def dit_kwartier(message):
+    if register_check(message):
+        output = this_or_next_getter(True, True, False)
+        message_handler(message.chat.id, output)
+
+@bot.message_handler(commands=['volgendkwartier'])
+def dit_kwartier(message):
+    if register_check(message):
+        output = this_or_next_getter(False, True, False)
+        message_handler(message.chat.id, output)
+
+
+@bot.message_handler(commands=['dituur'])
+def dit_kwartier(message):
+    if register_check(message):
+        output = this_or_next_getter(True, False, False)
+        message_handler(message.chat.id, output)
+
+
+@bot.message_handler(commands=['volgenduur'])
+def dit_kwartier(message):
+    if register_check(message):
+        output = this_or_next_getter(False, False, False)
+        message_handler(message.chat.id, output)
+
+
 
 @bot.message_handler(commands=['nu'])
 def now(message):
@@ -946,6 +982,31 @@ def func_about(naam, message):
                                              "database, probeer het opnieuw.")
     except Exception as e:
         error_handler(e, message, command='over')
+
+def this_or_next_getter(this = False, quarter = True, short=False):
+    table = "VwBotTextSchedule"
+    if this:
+        table += "This"
+    else:
+        table += "Next"
+    if quarter:
+        table+="Quarter"
+    else:
+        table += "Hour"
+    table_object = Table(table)
+    column = "BotText"
+    if short:
+        column += "Verkort"
+    query = f'SELECT {column} FROM {table}'
+    output_list = table_object.query(query)
+    output = ''
+    for i in output_list:
+        if output != '':
+            output += '\n---------'
+        output += i[0]
+    return output
+
+
 
 print('Running')
 try:
