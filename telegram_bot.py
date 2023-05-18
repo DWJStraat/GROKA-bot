@@ -1002,7 +1002,7 @@ def this_or_next_getter(this = False, quarter = True, short=False):
     output = ''
     for i in output_list:
         if output != '':
-            output += '\n---------\n'
+            output += '\n'
         output += i[0]
     return output
 
