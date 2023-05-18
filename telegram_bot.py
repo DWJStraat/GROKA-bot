@@ -519,7 +519,7 @@ def EHBOmsg(message):
 
 def EHBOmsg2(message):
     try:
-        if message.text == "stop":
+        if message.text.lower == "stop":
             message_handler(message.chat.id, "Je hebt het bericht niet verstuurd.")
             return
         logger(message, "EHBO", message.text)
