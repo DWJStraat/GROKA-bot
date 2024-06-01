@@ -1,2 +1,2 @@
 # GROKA-bot
-Een Telegram bot bedoeld voor GROKA 2023
+A Telegram bot written to manage a schedule for a large group.
